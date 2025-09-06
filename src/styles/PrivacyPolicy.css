@@ -1,0 +1,135 @@
+/* PrivacyPolicy.css - Styles for the privacy policy page */
+
+.privacy-policy-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.privacy-policy-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.privacy-policy-header h1 {
+  font-size: 32px;
+  color: #374151;
+  margin-bottom: 10px;
+}
+
+.privacy-policy-header p {
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.privacy-policy-date {
+  display: block;
+  color: #6b7280;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.privacy-policy-section {
+  margin-bottom: 30px;
+}
+
+.privacy-policy-section h2 {
+  font-size: 24px;
+  color: #4f46e5;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.privacy-policy-section h3 {
+  font-size: 20px;
+  color: #374151;
+  margin: 20px 0 10px;
+}
+
+.privacy-policy-section p,
+.privacy-policy-section li {
+  color: #4b5563;
+  line-height: 1.7;
+  margin-bottom: 15px;
+}
+
+.privacy-policy-section ul,
+.privacy-policy-section ol {
+  margin-left: 20px;
+  margin-bottom: 20px;
+}
+
+.privacy-policy-section li {
+  margin-bottom: 8px;
+}
+
+.privacy-policy-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+
+.privacy-policy-table th,
+.privacy-policy-table td {
+  border: 1px solid #e5e7eb;
+  padding: 12px;
+  text-align: left;
+}
+
+.privacy-policy-table th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #374151;
+}
+
+.privacy-policy-contact {
+  background-color: #f9fafb;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 30px;
+}
+
+.privacy-policy-contact h3 {
+  margin-top: 0;
+}
+
+.privacy-policy-footer {
+  margin-top: 40px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* Accordion style for mobile */
+@media (max-width: 768px) {
+  .privacy-policy-section h2 {
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .privacy-policy-section h2::after {
+    content: "+";
+    font-size: 24px;
+    transition: transform 0.3s ease;
+  }
+
+  .privacy-policy-section h2.active::after {
+    transform: rotate(45deg);
+  }
+
+  .privacy-policy-section-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+
+  .privacy-policy-section-content.active {
+    max-height: 2000px; /* Arbitrary large value */
+  }
+}

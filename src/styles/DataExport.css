@@ -1,0 +1,121 @@
+/* DataExport.css - Styles for the data export functionality */
+
+.data-export-container {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.data-export-header {
+  margin-bottom: 20px;
+}
+
+.data-export-header h3 {
+  font-size: 22px;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.data-export-header p {
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.data-export-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.export-option {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.export-option:hover {
+  border-color: #4f46e5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+}
+
+.export-option.selected {
+  border-color: #4f46e5;
+  background-color: rgba(79, 70, 229, 0.05);
+}
+
+.export-option-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.export-option-header i {
+  font-size: 20px;
+  color: #4f46e5;
+}
+
+.export-option-header h4 {
+  font-size: 18px;
+  color: #374151;
+  margin: 0;
+}
+
+.export-option-desc {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.data-export-footer {
+  margin-top: 24px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.export-progress {
+  margin-top: 20px;
+}
+
+.progress-bar {
+  height: 8px;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  transition: width 0.3s ease;
+}
+
+.export-message {
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.export-success {
+  color: #10b981;
+}
+
+.export-error {
+  color: #ef4444;
+}
+
+@media (max-width: 768px) {
+  .export-buttons {
+    flex-direction: column;
+  }
+}
