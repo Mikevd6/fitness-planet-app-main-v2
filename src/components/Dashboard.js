@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import '../styles/Dashboard.css';
 
 const Dashboard = () => {
+  const { user: authUser } = useAuth();
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Get user data from localStorage
-    const userData = JSON.parse(localStorage.getItem('user'));
-    
     setTimeout(() => {
-      setUser(userData || { username: 'Mike' }); // Default to Mike if no user found
+      const fallback = { name: 'Mike' };
+      setUser(authUser || fallback);
       setIsLoading(false);
-    }, 500);
-  }, []);
+    }, 250);
+  }, [authUser]);
 
   if (isLoading) {
     return (
@@ -26,7 +26,7 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard">
-      <h1 className="welcome-message">Welkom {user.username}!</h1>
+  <h1 className="welcome-message">Welkom {user.name || user.email || 'Gebruiker'}!</h1>
       
       <div className="dashboard-stats">
         <div className="stat-card">

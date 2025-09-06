@@ -1,13 +1,35 @@
 ﻿import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { noviAuthService } from '../services/noviAuthService';
+import authService from '../services/authService';
 
 // Initial state
-const initialState = {
+const baseState = {
   user: null,
   token: null,
   isAuthenticated: false,
-  loading: true,
+  loading: false,
   error: null
+};
+
+const getInitialState = () => {
+  try {
+    // Prefer noviAuthService keys
+    if (noviAuthService.isAuthenticated()) {
+      const user = noviAuthService.getCurrentUser();
+      const token = noviAuthService.getToken();
+      if (user && token) {
+        return { ...baseState, user, token, isAuthenticated: true };
+      }
+    }
+    // Fallback to legacy keys set by api auth service
+    const legacyToken = localStorage.getItem('token');
+    const legacyUserRaw = localStorage.getItem('user');
+    const legacyUser = legacyUserRaw ? JSON.parse(legacyUserRaw) : null;
+    if (legacyToken && legacyUser) {
+      return { ...baseState, user: legacyUser, token: legacyToken, isAuthenticated: true };
+    }
+  } catch {}
+  return { ...baseState };
 };
 
 // Action types
@@ -105,13 +127,13 @@ const AuthContext = createContext();
 
 // Auth provider component
 export const AuthProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(authReducer, initialState);
+  const [state, dispatch] = useReducer(authReducer, undefined, getInitialState);
 
   // Restore session on app load
   useEffect(() => {
-    const restoreSession = async () => {
+  const restoreSession = async () => {
       try {
-        if (noviAuthService.isAuthenticated()) {
+    if (noviAuthService.isAuthenticated()) {
           const user = noviAuthService.getCurrentUser();
           const token = noviAuthService.getToken();
           
@@ -120,15 +142,20 @@ export const AuthProvider = ({ children }) => {
               type: AUTH_ACTIONS.RESTORE_SESSION,
               payload: { user, token }
             });
-          } else {
-            dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: { loading: false } });
           }
         } else {
-          dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: { loading: false } });
+          const legacyToken = localStorage.getItem('token');
+          const legacyUserRaw = localStorage.getItem('user');
+          const legacyUser = legacyUserRaw ? JSON.parse(legacyUserRaw) : null;
+          if (legacyToken && legacyUser) {
+            dispatch({
+              type: AUTH_ACTIONS.RESTORE_SESSION,
+              payload: { user: legacyUser, token: legacyToken }
+            });
+          }
         }
       } catch (error) {
         console.error('Session restoration failed:', error);
-        dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: { loading: false } });
       }
     };
 
@@ -136,21 +163,31 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Login function
-  const login = async (credentials) => {
+  const login = async (email, password) => {
     dispatch({ type: AUTH_ACTIONS.LOGIN_START });
     
     try {
-      const result = await noviAuthService.login(credentials);
-      
-      if (result.success) {
-        dispatch({
-          type: AUTH_ACTIONS.LOGIN_SUCCESS,
-          payload: {
-            user: result.user,
-            token: result.token
-          }
-        });
-        return { success: true };
+      // Try backend API first
+      try {
+        const apiRes = await authService.login(email, password);
+        if (apiRes?.user && apiRes?.token) {
+          dispatch({
+            type: AUTH_ACTIONS.LOGIN_SUCCESS,
+            payload: { user: apiRes.user, token: apiRes.token }
+          });
+          return { success: true };
+        }
+      } catch (apiErr) {
+        // Fallback to local demo auth
+        const result = await noviAuthService.login({ email, password });
+        if (result.success) {
+          dispatch({
+            type: AUTH_ACTIONS.LOGIN_SUCCESS,
+            payload: { user: result.user, token: result.token }
+          });
+          return { success: true, fallback: true };
+        }
+        throw apiErr;
       }
     } catch (error) {
       dispatch({

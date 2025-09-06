@@ -95,6 +95,7 @@ const AppContent = () => {
           </RecipeProvider>
         ) : (
           <Routes>
+            <Route path="/" element={<Login />} />
             <Route path="/login" element={<Login />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
