@@ -1,4 +1,5 @@
-import axios from 'axios';
+// Use CJS build to keep Jest/react-scripts happy
+import axios from 'axios/dist/browser/axios.cjs';
 
 // App-level auth identifiers (provided by API)
 const APP_ID = '70ed8150';

@@ -19,6 +19,27 @@ const STORAGE_KEYS = {
 };
 
 const storage = {
+  // Generic helpers (used by some contexts)
+  getItem: (key) => {
+    try {
+      const value = localStorage.getItem(key);
+      return value ? JSON.parse(value) : null;
+    } catch (error) {
+      console.error('Error getting item from localStorage:', error);
+      return null;
+    }
+  },
+
+  setItem: (key, value) => {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (error) {
+      console.error('Error setting item in localStorage:', error);
+      return false;
+    }
+  },
+
   // User management
   setUser: (user) => {
     try {
