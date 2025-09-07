@@ -1,32 +1,14 @@
-// Use CJS build to keep Jest/react-scripts happy
-// Build-time compatible axios import with Jest-safe fallback
-let axios;
-const isTest = process.env.NODE_ENV === 'test';
-if (!isTest) {
-  // Delay require so Jest in test env doesn't try to parse ESM axios
-  // CRA/Webpack will bundle this correctly for dev/prod
-  // eslint-disable-next-line global-require
-  axios = require('axios');
-}
+import axios from 'axios';
 
 // App-level auth identifiers (provided by API)
 const APP_ID = '70ed8150';
 const APP_KEY = 'f4cc2b9f25cdd8185e8d0ba4c00adc23';
 const API_KEY = 'fitnessplanet:7m997U9ozv6dJ9JLyWh9';
 
-// Create an axios-like client; in tests, provide a minimal stub to avoid axios import
-const apiClient = isTest
-  ? {
-      defaults: { headers: { common: {} } },
-      interceptors: { request: { use: () => {} }, response: { use: () => {} } },
-      get: async () => ({ data: {} }),
-      post: async () => ({ data: {} }),
-      put: async () => ({ data: {} }),
-      delete: async () => ({ data: {} })
-    }
-  : axios.create({
-      baseURL: 'https://novi.datavortex.nl/api',
-      headers: {
+// Create axios client
+const apiClient = axios.create({
+  baseURL: 'https://novi.datavortex.nl/api',
+  headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
         // Sent with every request as required by the API
