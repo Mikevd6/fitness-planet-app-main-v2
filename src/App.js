@@ -21,89 +21,46 @@ const ProtectedRoute = ({ children }) => {
     return (
       <div className="loading">
         <div className="loading-spinner"></div>
-        <p>Fitness Planet wordt geladen...</p>
+        <p>Bezig met laden...</p>
       </div>
     );
   }
   return user ? children : <Navigate to="/login" replace />;
 };
 
-// Main App Content Component
-const AppContent = () => {
-  const { user } = useAuth();
-  
+function App() {
   return (
-    <Router>
-      <div className="App">
-        {user ? (
-          <RecipeProvider>
-            <MealPlanProvider>
+    <AuthProvider>
+      <RecipeProvider>
+        <MealPlanProvider>
+          <Router>
+            <div className="app-shell">
               <Header />
               <main className="main-content">
                 <Routes>
-                  <Route path="/" element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/dashboard" element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/workout" element={
-                    <ProtectedRoute>
-                      <WorkoutTracker />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/nutrition" element={
-                    <ProtectedRoute>
-                      <NutritionTracker />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/progress" element={
-                    <ProtectedRoute>
-                      <ProgressTracker />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/profile" element={
-                    <ProtectedRoute>
-                      <ProfileSettings />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/recipes" element={
-                    <ProtectedRoute>
-                      <RecipeSearchPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/meal-plan" element={
-                    <ProtectedRoute>
-                      <MealPlanPage />
-                    </ProtectedRoute>
-                  } />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                  <Route path="/workouts" element={<ProtectedRoute><WorkoutTracker /></ProtectedRoute>} />
+                  <Route path="/voeding" element={<ProtectedRoute><NutritionTracker /></ProtectedRoute>} />
+                  <Route path="/voortgang" element={<ProtectedRoute><ProgressTracker /></ProtectedRoute>} />
+                  <Route path="/profiel" element={<ProtectedRoute><ProfileSettings /></ProtectedRoute>} />
+                  <Route path="/recepten" element={<ProtectedRoute><RecipeSearchPage /></ProtectedRoute>} />
+                  <Route path="/maaltijdplan" element={<ProtectedRoute><MealPlanPage /></ProtectedRoute>} />
+                  {/* Aliassen Engels -> Nederlands */}
+                  <Route path="/meal-plan" element={<Navigate to="/maaltijdplan" replace />} />
+                  <Route path="/recipes" element={<Navigate to="/recepten" replace />} />
+                  <Route path="/nutrition" element={<Navigate to="/voeding" replace />} />
+                  <Route path="/progress" element={<Navigate to="/voortgang" replace />} />
+                  <Route path="/profile" element={<Navigate to="/profiel" replace />} />
+                  <Route path="/workout" element={<Navigate to="/workouts" replace />} />
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
               </main>
-            </MealPlanProvider>
-          </RecipeProvider>
-        ) : (
-          <div className="app-login">
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="*" element={<Navigate to="/login" replace />} />
-            </Routes>
-          </div>
-        )}
-      </div>
-    </Router>
-  );
-};
-
-function App() {
-  console.log('App component mounting...');
-  
-  return (
-    <AuthProvider>
-      <AppContent />
+            </div>
+          </Router>
+        </MealPlanProvider>
+      </RecipeProvider>
     </AuthProvider>
   );
 }

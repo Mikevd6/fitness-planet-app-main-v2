@@ -1,78 +1,83 @@
 import React, { useState } from 'react';
+import '../styles/ProgressTracker.css';
 
 const ProgressTracker = () => {
   const [loading] = useState(false);
 
   return (
-    <div className="progress-tracker">
-      <div className="container">
-        <h1>Progress Tracker</h1>
-        <p>Monitor your fitness journey and achievements.</p>
-        
-        {loading ? (
-          <div className="loading">
-            <div className="loading-spinner"></div>
-            <p>Loading progress data...</p>
-          </div>
-        ) : (
-          <div className="progress-content">
-            <div className="progress-overview">
-              <h2>Your Progress</h2>
-              <div className="progress-cards">
-                <div className="progress-card">
-                  <h3>Weight</h3>
-                  <span className="progress-value">-- kg</span>
-                  <span className="progress-change">No data</span>
-                </div>
-                <div className="progress-card">
-                  <h3>Body Fat %</h3>
-                  <span className="progress-value">--%</span>
-                  <span className="progress-change">No data</span>
-                </div>
-                <div className="progress-card">
-                  <h3>Muscle Mass</h3>
-                  <span className="progress-value">-- kg</span>
-                  <span className="progress-change">No data</span>
-                </div>
-                <div className="progress-card">
-                  <h3>Workouts This Week</h3>
-                  <span className="progress-value">0</span>
-                  <span className="progress-change">Keep going!</span>
-                </div>
+    <div className="page progress-page">
+      <header className="page-header">
+        <div className="page-heading-group">
+          <h1 className="page-title">Voortgang</h1>
+          <p className="page-subtitle">Overzicht van je fysieke progressie en trainingsconsistentie.</p>
+        </div>
+        <div className="page-actions">
+          <button className="btn btn-outline">Exporteren</button>
+          <button className="btn btn-primary">Nieuwe Meting</button>
+        </div>
+      </header>
+
+      {loading ? (
+        <div className="loading-block">
+          <div className="loading-spinner"></div>
+          <p>Voortgang laden...</p>
+        </div>
+      ) : (
+        <div className="progress-layout">
+          <section className="panel key-metrics">
+            <h2 className="panel-title">Belangrijkste Statistieken</h2>
+            <div className="metric-grid">
+              <div className="metric-tile">
+                <span className="label">Gewicht</span>
+                <span className="value">82.4<small>kg</small></span>
+                <span className="delta down">-0.6 kg</span>
+              </div>
+              <div className="metric-tile">
+                <span className="label">Vet%</span>
+                <span className="value">15.8<small>%</small></span>
+                <span className="delta">−0.3%</span>
+              </div>
+              <div className="metric-tile">
+                <span className="label">Spiermassa</span>
+                <span className="value">38.1<small>kg</small></span>
+                <span className="delta up">+0.2 kg</span>
+              </div>
+              <div className="metric-tile">
+                <span className="label">Workouts / Week</span>
+                <span className="value">3<small>/5</small></span>
+                <span className="delta neutral">Consistent</span>
               </div>
             </div>
-            
-            <div className="progress-charts">
-              <h3>Progress Charts</h3>
-              <p>Charts will appear here once you start tracking your progress.</p>
-            </div>
-            
-            <div className="progress-log">
-              <h3>Add Progress Entry</h3>
-              <form>
-                <div className="form-group">
-                  <label htmlFor="weight">Weight (kg):</label>
-                  <input type="number" id="weight" name="weight" step="0.1" />
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="bodyFat">Body Fat %:</label>
-                  <input type="number" id="bodyFat" name="bodyFat" step="0.1" />
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="notes">Notes:</label>
-                  <textarea id="notes" name="notes" rows="3"></textarea>
-                </div>
-                
-                <button type="submit" className="btn btn-primary">
-                  Add Entry
-                </button>
-              </form>
-            </div>
-          </div>
-        )}
-      </div>
+          </section>
+
+          <section className="panel trend-section">
+            <h2 className="panel-title">Trends</h2>
+            <div className="trend-placeholder">(Grafieken komen hier in een latere fase)</div>
+          </section>
+
+          <section className="panel add-entry">
+            <h2 className="panel-title">Nieuwe Meting</h2>
+            <form className="form-grid">
+              <div className="form-field">
+                <label>Gewicht (kg)</label>
+                <input type="number" step="0.1" />
+              </div>
+              <div className="form-field">
+                <label>Vet% </label>
+                <input type="number" step="0.1" />
+              </div>
+              <div className="form-field full">
+                <label>Notities</label>
+                <textarea rows="2" placeholder="Slaap, energie, blessures..."></textarea>
+              </div>
+              <div className="form-actions">
+                <button type="reset" className="btn btn-secondary">Reset</button>
+                <button type="submit" className="btn btn-primary">Opslaan</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
     </div>
   );
 };
