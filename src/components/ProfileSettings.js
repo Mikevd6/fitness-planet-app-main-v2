@@ -1,166 +1,65 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import '../styles/ProfileSettings.css';
 
 const ProfileSettings = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState({
-    name: '',
-    email: '',
-    age: '',
-    height: '',
-    weight: '',
-    activityLevel: 'moderate',
-    fitnessGoals: [],
-    dietPreferences: [],
-    allergens: []
+    name: '', email: '', age: '', height: '', weight: '',
+    activityLevel: 'moderate'
   });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Load user profile data
     if (user) {
-      setProfile(prev => ({
-        ...prev,
-        name: user.name || '',
-        email: user.email || ''
-      }));
+      setProfile(p => ({ ...p, name: user.name || '', email: user.email || '' }));
     }
   }, [user]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setProfile(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setProfile(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
-    try {
-      // Here you would typically save the profile data
-      console.log('Saving profile:', profile);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      alert('Profile updated successfully!');
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      alert('Error updating profile. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    await new Promise(r => setTimeout(r, 600));
+    setLoading(false);
+    // TODO persist
   };
 
   return (
-    <div className="profile-settings">
-      <div className="container">
-        <h1>Profile Settings</h1>
-        <p>Manage your personal information and preferences.</p>
-        
-        <form onSubmit={handleSubmit} className="profile-form">
-          <div className="form-section">
-            <h2>Personal Information</h2>
-            
-            <div className="form-group">
-              <label htmlFor="name">Name:</label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={profile.name}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="email">Email:</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={profile.email}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="age">Age:</label>
-              <input
-                type="number"
-                id="age"
-                name="age"
-                value={profile.age}
-                onChange={handleInputChange}
-                min="13"
-                max="120"
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="height">Height (cm):</label>
-              <input
-                type="number"
-                id="height"
-                name="height"
-                value={profile.height}
-                onChange={handleInputChange}
-                min="100"
-                max="250"
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="weight">Weight (kg):</label>
-              <input
-                type="number"
-                id="weight"
-                name="weight"
-                value={profile.weight}
-                onChange={handleInputChange}
-                min="30"
-                max="300"
-                step="0.1"
-              />
-            </div>
+    <div className="page profile-page">
+      <header className="page-header">
+        <div className="page-heading-group">
+          <h1 className="page-title">Profiel</h1>
+          <p className="page-subtitle">Persoonlijke gegevens en voorkeuren.</p>
+        </div>
+        <div className="page-actions">
+          <button className="btn btn-outline">Wachtwoord</button>
+          <button className="btn btn-primary" form="profile-form" disabled={loading}>{loading ? 'Opslaan...' : 'Opslaan'}</button>
+        </div>
+      </header>
+
+      <form id="profile-form" onSubmit={handleSubmit} className="profile-layout">
+        <section className="panel section-basic">
+          <h2 className="panel-title">Basis</h2>
+          <div className="form-grid">
+            <div className="form-field"><label>Naam</label><input name="name" value={profile.name} onChange={handleInputChange} /></div>
+            <div className="form-field"><label>Email</label><input name="email" value={profile.email} disabled /></div>
+            <div className="form-field"><label>Leeftijd</label><input name="age" value={profile.age} onChange={handleInputChange} type="number" /></div>
+            <div className="form-field"><label>Lengte (cm)</label><input name="height" value={profile.height} onChange={handleInputChange} type="number" /></div>
+            <div className="form-field"><label>Gewicht (kg)</label><input name="weight" value={profile.weight} onChange={handleInputChange} type="number" step="0.1" /></div>
+            <div className="form-field"><label>Activiteit</label><select name="activityLevel" value={profile.activityLevel} onChange={handleInputChange}><option value="sedentary">Laag</option><option value="light">Licht</option><option value="moderate">Gemiddeld</option><option value="active">Actief</option><option value="extremely-active">Zeer Actief</option></select></div>
           </div>
-          
-          <div className="form-section">
-            <h2>Fitness Preferences</h2>
-            
-            <div className="form-group">
-              <label htmlFor="activityLevel">Activity Level:</label>
-              <select
-                id="activityLevel"
-                name="activityLevel"
-                value={profile.activityLevel}
-                onChange={handleInputChange}
-              >
-                <option value="sedentary">Sedentary</option>
-                <option value="light">Light Activity</option>
-                <option value="moderate">Moderate Activity</option>
-                <option value="active">Very Active</option>
-                <option value="extremely-active">Extremely Active</option>
-              </select>
-            </div>
-          </div>
-          
-          <div className="form-actions">
-            <button 
-              type="submit" 
-              className="btn btn-primary"
-              disabled={loading}
-            >
-              {loading ? 'Saving...' : 'Save Profile'}
-            </button>
-          </div>
-        </form>
-      </div>
+        </section>
+
+        <section className="panel section-preferences">
+          <h2 className="panel-title">Instellingen</h2>
+          <div className="placeholder-block">(Uitbreiden met dieet & doelen in latere fase)</div>
+        </section>
+      </form>
     </div>
   );
 };
