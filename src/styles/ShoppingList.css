@@ -473,6 +473,6 @@
   }
   
   .list-item.checked .item-name {
-    color: #555;
+    color: var(--color-text-muted, #475569);
   }
 }

@@ -5,13 +5,158 @@
   padding: 0;
 }
 
+:root {
+  /* Base palette (WCAG mindful) */
+  --color-bg: #f8fafc;
+  --color-bg-alt: #ffffff;
+  --color-surface: #ffffff;
+  --color-panel: #f1f5f9;
+  --color-border: #d0d7e2;
+  --color-border-strong: #94a3b8;
+  --color-text: #1e293b; /* slate-800 */
+  --color-text-strong: #0f172a; /* slate-900 */
+  --color-text-muted: #475569; /* slate-600 (contrast ~4.6 on white) */
+  --color-text-faint: #64748b; /* slate-500 still acceptable for small meta */
+  --color-primary: #4f46e5; /* indigo-600 */
+  --color-primary-accent: #6366f1; /* indigo-500 */
+  --color-primary-hover: #4338ca; /* indigo-700 */
+  --color-accent: #ec4899; /* pink-500 */
+  --color-accent-hover: #db2777; /* pink-600 */
+  --color-success: #059669; /* emerald-600 */
+  --color-success-hover: #047857; /* emerald-700 */
+  --color-danger: #dc2626; /* red-600 */
+  --color-danger-hover: #b91c1c; /* red-700 */
+  --color-warning: #d97706; /* amber-600 */
+  --color-info: #0ea5e9; /* sky-500 */
+  --color-focus: #6366f1;
+  --color-link: #4f46e5;
+  --color-link-hover: #4338ca;
+  --ring-offset: 2px;
+  --shadow-focus: 0 0 0 3px rgba(99,102,241,0.4);
+  --gradient-app: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%);
+  --gradient-hero: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #9333ea 100%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0f172a;
+    --color-bg-alt: #1e293b;
+    --color-surface: #1e293b;
+    --color-panel: #24324a;
+    --color-border: #334155;
+    --color-border-strong: #475569;
+    --color-text: #f1f5f9;
+    --color-text-strong: #ffffff;
+    --color-text-muted: #cbd5e1;
+    --color-text-faint: #94a3b8;
+    --gradient-app: linear-gradient(135deg, #312e81 0%, #4f46e5 60%, #7c3aed 100%);
+    --gradient-hero: linear-gradient(135deg, #4338ca 0%, #6d28d9 60%, #9333ea 100%);
+  }
+}
+
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-app);
   min-height: 100vh;
-  color: #333;
+  color: var(--color-text);
+}
+
+/* Typographic hierarchy */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-text-strong);
+  line-height: 1.2;
+}
+
+p, li, label, span, input, textarea, select, button {
+  color: var(--color-text);
+}
+
+small, .text-muted, .meta, .subtitle, .helper-text {
+  color: var(--color-text-muted) !important;
+}
+
+.meta-faint, .text-faint {
+  color: var(--color-text-faint) !important;
+}
+
+/* Links */
+a {
+  color: var(--color-link);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+a:hover, a:focus {
+  color: var(--color-link-hover);
+}
+
+/* Buttons base (override legacy if needed) */
+button, .btn {
+  color: #fff;
+}
+
+.btn-secondary { color: #fff; }
+
+/* Panels / cards */
+.panel, .card, .recipe-card, .stat-card, .dashboard-panel {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+/* Improve contrast for subtitles previously using #666 */
+.subtitle, .recipe-details p, .item-name.faded, .list-item.checked .item-name {
+  color: var(--color-text-muted) !important;
+}
+
+/* Borders */
+hr, .divider, .card, .panel, .input-wrapper, input, select, textarea {
+  border-color: var(--color-border);
+}
+
+/* Form elements */
+input, select, textarea {
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--color-text-faint);
+}
+
+/* Focus */
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: var(--ring-offset);
+  box-shadow: var(--shadow-focus);
+}
+
+/* Utility */
+.high-contrast-toggle {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  background: var(--color-text-strong);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 24px;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
+.high-contrast-active body, body.high-contrast {
+  --color-bg: #ffffff;
+  --color-bg-alt: #ffffff;
+  --color-surface: #ffffff;
+  --color-panel: #f1f5f9;
+  --color-text: #0f172a;
+  --color-text-strong: #000000;
+  --color-text-muted: #334155;
+  --color-text-faint: #475569;
+  --color-border: #94a3b8;
 }
 
 code {
@@ -21,11 +166,6 @@ code {
 /* Remove default focus outlines for mouse users, but keep them for keyboard navigation */
 :focus:not(:focus-visible) {
   outline: none;
-}
-
-:focus-visible {
-  outline: 2px solid #4f46e5;
-  outline-offset: 2px;
 }
 
 /* Accessibility - Make sure elements have appropriate contrast */
