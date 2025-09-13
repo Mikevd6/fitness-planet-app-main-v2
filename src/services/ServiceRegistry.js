@@ -1,3 +1,8 @@
+import { storage } from '../utils/localStorage';
+import { apiDomain } from './api';
+import { notificationService } from '../utils/notificationService';
+import { healthCheckService } from '../utils/healthCheck';
+
 /**
  * ServiceRegistry - Centrale hub voor applicatieservices
  * Maakt het toevoegen van nieuwe features eenvoudiger door centrale registratie
@@ -99,15 +104,9 @@ class ServiceRegistry {
 export const serviceRegistry = new ServiceRegistry();
 
 // Standaard services registreren
-import { storage } from '../utils/localStorage';
-import { apiService } from '../utils/apiService';
-import { notificationService } from '../utils/notificationService';
-import { healthCheckService } from '../utils/healthCheck';
-
-// Standaard services registreren
 serviceRegistry
   .register('storage', storage)
-  .register('api', apiService)
+  .register('api', apiDomain)
   .register('notifications', notificationService)
   .register('healthCheck', healthCheckService, (service) => {
     if (process.env.NODE_ENV === 'production') {

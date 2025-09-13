@@ -175,3 +175,20 @@ code {
     color: black;
   }
 }
+
+/* Gradient utilities */
+.gradient-light { background: linear-gradient(135deg,#f8fafc,#e2e8f0); color: var(--color-text); }
+.gradient-light .inverse, .gradient-light.inverse { color: #fff; }
+.gradient-accent-green { background: linear-gradient(135deg,#10b981,#059669); color:#fff; }
+.gradient-accent-indigo { background: linear-gradient(135deg,#4f46e5,#6366f1); color:#fff; }
+.gradient-accent-purple { background: linear-gradient(135deg,#7c3aed,#9333ea); color:#fff; }
+.gradient-accent-amber { background: linear-gradient(135deg,#fbbf24,#f59e0b); color:#1e293b; }
+.gradient-accent-amber.deep { background: linear-gradient(135deg,#f59e0b,#d97706); color:#1e293b; }
+.gradient-overlay { position:relative; }
+.gradient-overlay:before { content:""; position:absolute; top:0; right:0; bottom:0; left:0; background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.2)); mix-blend-mode:normal; pointer-events:none; border-radius:inherit; }
+.gradient-overlay>* { position:relative; z-index:1; }
+
+/* Enforce readable text inside hero-like light gradients */
+.hero-section, .nutrition-tracker, .contact-hero, .recipes-hero, .weekmenu-hero {
+  color: var(--color-text);
+}

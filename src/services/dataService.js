@@ -1,46 +1,31 @@
-import apiClient from './api';
+import { api } from './api';
 
 const dataService = {
   // User profile operations
   getUserProfile: async () => {
-    try {
-      const response = await apiClient.get('/user/profile');
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const res = await api.get('/user/profile', { context: 'getUserProfile', silent: true });
+    if (!res.success) throw res.error;
+    return res.data;
   },
   
   updateUserProfile: async (profileData) => {
-    try {
-      const response = await apiClient.put('/user/profile', profileData);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const res = await api.put('/user/profile', profileData, { context: 'updateUserProfile' });
+    if (!res.success) throw res.error;
+    return res.data;
   },
   
   // Fitness data operations
   getWorkoutPlans: async () => {
-    try {
-      const response = await apiClient.get('/workouts');
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const res = await api.get('/workouts', { context: 'getWorkoutPlans' });
+    if (!res.success) throw res.error;
+    return res.data;
   },
   
   saveWorkoutPlan: async (workoutData) => {
-    try {
-      const response = await apiClient.post('/workouts', workoutData);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const res = await api.post('/workouts', workoutData, { context: 'saveWorkoutPlan' });
+    if (!res.success) throw res.error;
+    return res.data;
   },
-  
-  // Other data operations as needed
-  // ...
 };
 
 export default dataService;
