@@ -203,6 +203,11 @@ export const RecipeProvider = ({ children }) => {
         to: pagination.to
       };
 
+      // Normalize calorie filter if using maxCalories semantic
+      if (filters.maxCalories && !filters.calories) {
+        searchOptions.calories = `0-${filters.maxCalories}`;
+      }
+
       const result = await edamamService.searchRecipes(searchOptions);
 
       if (result.success) {
@@ -253,6 +258,17 @@ export const RecipeProvider = ({ children }) => {
       type: RECIPE_ACTIONS.SET_FILTERS,
       payload: newFilters
     });
+  };
+
+  // Convenience method to update filters and immediately search
+  const updateFiltersAndSearch = async (newFilters) => {
+    setFilters(newFilters);
+    // Reset pagination when filters change
+    dispatch({
+      type: RECIPE_ACTIONS.SET_PAGINATION,
+      payload: { from: 0, to: 20 }
+    });
+    return await searchRecipes(state.searchQuery, { ...state.filters, ...newFilters }, { from: 0, to: 20, total: state.pagination.total });
   };
 
   // Clear search results
@@ -449,7 +465,8 @@ export const RecipeProvider = ({ children }) => {
     getAlternativeRecipes,
     loadMoreRecipes,
     clearError,
-    loadFavorites
+  loadFavorites,
+  updateFiltersAndSearch
   };
 
   return (

@@ -70,19 +70,26 @@ function mealPlanReducer(state, action) {
           ...state.weekMenu,
           [day]: {
             ...state.weekMenu[day],
-            [mealType]: recipe
+            [mealType]: [
+              ...(state.weekMenu[day]?.[mealType] || []),
+              recipe
+            ]
           }
         }
       };
     case actionTypes.REMOVE_RECIPE_FROM_DAY:
-      const { day: removeDay, mealType: removeMealType } = action.payload;
-      const updatedDayMenu = { ...state.weekMenu[removeDay] };
-      delete updatedDayMenu[removeMealType];
+      const { day: removeDay, mealType: removeMealType, index: removeIndex } = action.payload;
+      const dayClone = { ...(state.weekMenu[removeDay] || {}) };
+      const slotArray = [...(dayClone[removeMealType] || [])];
+      if (removeIndex != null) {
+        slotArray.splice(removeIndex, 1);
+      }
+      dayClone[removeMealType] = slotArray;
       return {
         ...state,
         weekMenu: {
           ...state.weekMenu,
-          [removeDay]: updatedDayMenu
+          [removeDay]: dayClone
         }
       };
     default:
@@ -126,7 +133,7 @@ export const MealPlanProvider = ({ children }) => {
 
   // Save data to localStorage when state changes
   useEffect(() => {
-    storage.setItem('weekMenu', state.weekMenu);
+  storage.saveWeekMenu(state.weekMenu);
   }, [state.weekMenu]);
 
   useEffect(() => {
@@ -140,7 +147,14 @@ export const MealPlanProvider = ({ children }) => {
   const value = {
     ...state,
     dispatch,
-    actionTypes
+    actionTypes,
+    addMeal: (day, mealType, meal) => {
+      dispatch({ type: actionTypes.ADD_RECIPE_TO_DAY, payload: { day, mealType, recipe: meal } });
+    },
+    removeMeal: (day, mealType, index) => {
+      dispatch({ type: actionTypes.REMOVE_RECIPE_FROM_DAY, payload: { day, mealType, index } });
+    },
+    clearWeekMenu: () => dispatch({ type: actionTypes.CLEAR_WEEK_MENU })
   };
 
   return (

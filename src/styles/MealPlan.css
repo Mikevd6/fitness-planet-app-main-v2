@@ -1,1 +1,60 @@
-.meal-plan-page { padding: 2rem; max-width: 1400px; margin: 0 auto; }
+.meal-plan-page { padding: 2rem 1.5rem 3rem; max-width: 1400px; margin: 0 auto; }
+
+.meal-plan-page .page-header { margin-bottom: 1.75rem; }
+.meal-plan-page .page-title { margin:0 0 .4rem; font-size:2.25rem; }
+.meal-plan-page .page-subtitle { margin:0; font-size:.95rem; color:#64748b; }
+
+.empty-meal-plan { text-align:center; font-style:italic; color:#64748b; padding:2.5rem 1rem; }
+
+.meal-plan-wrapper { overflow-x:auto; padding:1.25rem 1.25rem 1.5rem; }
+
+.meal-plan-grid { min-width: 800px; display:flex; flex-direction:column; gap:.5rem; }
+.grid-header { display:grid; grid-template-columns: 130px repeat(auto-fit, minmax(120px,1fr)); gap:.5rem; }
+.grid-header .corner { width:130px; }
+.day-col { background:#f1f5f9; padding:.6rem .4rem; font-size:.7rem; text-transform:uppercase; font-weight:600; letter-spacing:.5px; border:1px solid #e2e8f0; border-radius:.5rem; text-align:center; }
+
+.meal-row { display:grid; grid-template-columns: 130px repeat(auto-fit, minmax(120px,1fr)); gap:.5rem; align-items:stretch; }
+.slot-header { background:#eef2ff; color:#4338ca; padding:.65rem .55rem; font-size:.7rem; font-weight:600; letter-spacing:.5px; border:1px solid #e0e7ff; border-radius:.5rem; display:flex; align-items:center; }
+.meal-cell { background:#fff; border:1px solid #e2e8f0; border-radius:.5rem; padding:.4rem .45rem .55rem; position:relative; min-height:70px; display:flex; }
+
+.add-meal-btn { width:100%; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:.4rem; font-size:1.1rem; color:#64748b; cursor:pointer; display:flex; align-items:center; justify-content:center; transition: background .15s, color .15s; }
+.add-meal-btn:hover { background:#f1f5f9; color:#334155; }
+
+.meal-list { list-style:none; margin:0; padding:0; width:100%; display:flex; flex-direction:column; gap:.35rem; }
+.meal-item { display:flex; justify-content:space-between; gap:.5rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:.4rem; padding:.4rem .5rem; font-size:.65rem; line-height:1.3; }
+.meal-title { font-weight:600; color:#334155; }
+.meal-kcal { color:#64748b; font-weight:500; }
+
+/* Modal */
+.modal-overlay { position:fixed; top:0; right:0; bottom:0; left:0; background:rgba(15,23,42,.45); display:flex; align-items:flex-start; justify-content:center; padding:4vh 1rem; z-index:50; -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); }
+.modal-panel { background:#fff; width:100%; max-width:420px; border-radius:1rem; box-shadow:0 20px 40px -10px rgba(0,0,0,.25); animation: fadeIn .25s ease; padding:1.25rem 1.25rem 1.5rem; display:flex; flex-direction:column; }
+.modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:.75rem; }
+.modal-header h3 { margin:0; font-size:1.1rem; }
+.close-btn { background:none; border:none; font-size:1.25rem; line-height:1; cursor:pointer; color:#334155; }
+.modal-form { display:flex; flex-direction:column; gap:.9rem; }
+.modal-field { display:flex; flex-direction:column; gap:.35rem; }
+.modal-field label { font-size:.7rem; font-weight:600; text-transform:uppercase; letter-spacing:.5px; color:#475569; }
+.modal-field input, .modal-field textarea { border:1px solid #cbd5e1; border-radius:.5rem; padding:.55rem .65rem; font-size:.8rem; font-family:inherit; resize:vertical; }
+.modal-actions { display:flex; justify-content:flex-end; gap:.6rem; margin-top:.25rem; }
+.btn-secondary, .btn-primary { font-size:.75rem; font-weight:600; border-radius:.5rem; padding:.55rem .95rem; cursor:pointer; border:1px solid transparent; }
+.btn-secondary { background:#f1f5f9; color:#334155; border-color:#e2e8f0; }
+.btn-secondary:hover { background:#e2e8f0; }
+.btn-primary { background:#2563eb; color:#fff; }
+.btn-primary:hover { background:#1d4ed8; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(8px);} to { opacity:1; transform:translateY(0);} }
+
+.meal-right { display:flex; align-items:center; gap:.4rem; }
+.remove-meal-btn { background:#fee2e2; border:1px solid #fecaca; color:#b91c1c; font-size:.85rem; width:1.4rem; height:1.4rem; line-height:1; border-radius:.35rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.remove-meal-btn:hover { background:#fecaca; }
+
+@media (max-width: 800px) {
+	.meal-plan-wrapper { padding:1rem; }
+	.meal-plan-grid { min-width: 600px; }
+	.grid-header, .meal-row { grid-template-columns: 110px repeat(auto-fit, minmax(110px,1fr)); }
+	.grid-header .corner, .slot-header { width:110px; }
+}
+
+@media (max-width: 640px) {
+	.meal-plan-page { padding:1.5rem 1rem 2.5rem; }
+	.meal-plan-grid { min-width: 520px; }
+}
