@@ -1,11 +1,12 @@
 import axios from 'axios';
 import { handleError } from '../utils/errorHandling';
 
-// Environment-driven configuration (fallbacks kept for dev/demo)
-const APP_ID = process.env.REACT_APP_NOVI_APP_ID || '70ed8150';
-const APP_KEY = process.env.REACT_APP_NOVI_APP_KEY || 'f4cc2b9f25cdd8185e8d0ba4c00adc23';
-const API_KEY = process.env.REACT_APP_NOVI_API_KEY || 'fitnessplanet:7m997U9ozv6dJ9JLyWh9';
-const BASE_URL = process.env.REACT_APP_NOVI_BASE_URL || 'https://novi.datavortex.nl/api';
+// Environment-driven configuration (no real secrets baked into bundle)
+// Provide minimal, non-sensitive fallbacks only for local dev if .env not configured.
+const APP_ID = process.env.REACT_APP_NOVI_APP_ID || 'dev-app';
+const APP_KEY = process.env.REACT_APP_NOVI_APP_KEY || 'dev-key';
+const API_KEY = process.env.REACT_APP_NOVI_API_KEY || 'dev-api-key';
+const BASE_URL = process.env.REACT_APP_NOVI_BASE_URL || process.env.REACT_APP_NOVI_API_URL || 'http://localhost:4000/api';
 
 // Axios client (single instance)
 const apiClient = axios.create({
