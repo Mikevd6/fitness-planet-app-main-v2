@@ -1,4 +1,6 @@
 ﻿// Edamam Recipe API Service
+import localRecipes from '../data/recipes';
+
 class EdamamService {
   constructor() {
     this.baseUrl = process.env.REACT_APP_EDAMAM_BASE_URL || 'https://api.edamam.com';
@@ -6,6 +8,7 @@ class EdamamService {
     this.appKey = process.env.REACT_APP_EDAMAM_APP_KEY;
     this.recipeSearchUrl = `${this.baseUrl}/search`;
     this.nutritionUrl = `${this.baseUrl}/api/nutrition-data/v2/nutrients`;
+    this.requestTimeoutMs = 8000; // 8s timeout safeguard
   }
 
   // Validate API credentials
@@ -15,9 +18,66 @@ class EdamamService {
     }
   }
 
-  // Search recipes with advanced filters
-  async searchRecipes(options = {}) {
+  // Internal: fetch with timeout
+  async fetchWithTimeout(url, opts = {}) {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), this.requestTimeoutMs);
     try {
+      const res = await fetch(url, { ...opts, signal: controller.signal });
+      clearTimeout(id);
+      return res;
+    } catch (err) {
+      clearTimeout(id);
+      throw err;
+    }
+  }
+
+  // Build local fallback result from static dataset
+  buildLocalResult(query = '') {
+    const q = (query || '').toLowerCase();
+    const filtered = localRecipes
+      .filter(r => !q || r.title.toLowerCase().includes(q))
+      .map(r => ({
+        id: `local-${r.id}`,
+        uri: `local:recipe:${r.id}`,
+        title: r.title,
+        description: r.description,
+        image: r.imageUrl,
+        source: 'Local Dataset',
+        prepTime: r.prepTime || null,
+        totalTime: r.prepTime || null,
+        calories: r.calories || 0,
+        caloriesPerServing: r.calories || 0,
+        ingredients: r.ingredients || [],
+        instructions: r.instructions || [],
+        cuisineType: [],
+        mealType: [],
+        dishType: [],
+        dietLabels: [],
+        healthLabels: [],
+        macros: r.macros || {},
+        nutrients: {},
+        tags: [],
+        isFavorite: false,
+  addedAt: new Date().toISOString(),
+  _fallback: true
+      }));
+    return {
+      success: true,
+      recipes: filtered,
+      totalResults: filtered.length,
+      from: 0,
+      to: filtered.length
+    };
+  }
+
+  // Search recipes with advanced filters (with graceful fallback)
+  async searchRecipes(options = {}) {
+    const credsPresent = Boolean(this.appId && this.appKey);
+    try {
+      if (!credsPresent) {
+        return this.buildLocalResult(options.query);
+      }
       this.validateCredentials();
 
       const {
@@ -57,7 +117,7 @@ class EdamamService {
         if (value) params.append(key, value);
       });
 
-      const response = await fetch(`${this.recipeSearchUrl}?${params.toString()}`);
+  const response = await this.fetchWithTimeout(`${this.recipeSearchUrl}?${params.toString()}`);
       
       if (!response.ok) {
         throw new Error(`API request failed: ${response.status}`);
@@ -73,18 +133,27 @@ class EdamamService {
         to: data.to || 0
       };
     } catch (error) {
-      console.error('Recipe search error:', error);
-      return {
-        success: false,
-        error: error.message,
-        recipes: []
-      };
+  console.error('Recipe search error:', error);
+  // Fallback to local dataset if network/timeout/credential issue
+  return this.buildLocalResult(options.query);
     }
   }
 
   // Get recipe by URI
   async getRecipeByUri(uri) {
+    const credsPresent = Boolean(this.appId && this.appKey);
     try {
+      if (!credsPresent) {
+        const localId = (uri || '').split(':').pop();
+        const local = localRecipes.find(r => `${r.id}` === localId);
+        if (local) {
+          return {
+            success: true,
+            recipe: this.buildLocalResult(local.title).recipes.find(r => r.id === `local-${local.id}`) || null
+          };
+        }
+        return { success: false, error: 'Recipe not found' };
+      }
       this.validateCredentials();
 
       const params = new URLSearchParams({
@@ -94,7 +163,7 @@ class EdamamService {
         uri: uri
       });
 
-      const response = await fetch(`${this.recipeSearchUrl}?${params.toString()}`);
+  const response = await this.fetchWithTimeout(`${this.recipeSearchUrl}?${params.toString()}`);
       
       if (!response.ok) {
         throw new Error(`API request failed: ${response.status}`);
@@ -108,12 +177,8 @@ class EdamamService {
         recipe: recipes[0] || null
       };
     } catch (error) {
-      console.error('Recipe fetch error:', error);
-      return {
-        success: false,
-        error: error.message,
-        recipe: null
-      };
+  console.error('Recipe fetch error:', error);
+  return { success: false, error: error.message, recipe: null };
     }
   }
 
@@ -127,7 +192,7 @@ class EdamamService {
         app_key: this.appKey
       });
 
-      const response = await fetch(`${this.nutritionUrl}?${params.toString()}`, {
+  const response = await this.fetchWithTimeout(`${this.nutritionUrl}?${params.toString()}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -148,12 +213,8 @@ class EdamamService {
         nutrition: this.transformNutritionData(data)
       };
     } catch (error) {
-      console.error('Nutrition analysis error:', error);
-      return {
-        success: false,
-        error: error.message,
-        nutrition: null
-      };
+  console.error('Nutrition analysis error:', error);
+  return { success: false, error: error.message, nutrition: null };
     }
   }
 
@@ -255,7 +316,7 @@ class EdamamService {
       to: 12
     };
 
-    return await this.searchRecipes(searchOptions);
+  return await this.searchRecipes(searchOptions);
   }
 
   // Get alternative recipes similar to a given recipe
@@ -269,7 +330,7 @@ class EdamamService {
       to: count + 5 // Get a few extra to filter out the original
     };
 
-    const result = await this.searchRecipes(searchOptions);
+  const result = await this.searchRecipes(searchOptions);
     
     if (result.success) {
       // Filter out the original recipe and return only the requested count

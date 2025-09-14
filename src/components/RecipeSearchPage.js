@@ -9,12 +9,23 @@ const RecipeSearchPage = () => {
   const [query, setQuery] = useState('');
 
   useEffect(() => {
-    return () => clearSearchResults();
-  }, [clearSearchResults]);
+    // Auto-load initial recipes (fallback dataset)
+    searchRecipes('');
+
+    return () => {
+      clearSearchResults();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (!query.trim()) return;
+    // Allow empty query to surface fallback/local dataset
+    if (!query.trim()) {
+      setSearchQuery('');
+      await searchRecipes('');
+      return;
+    }
     setSearchQuery(query);
     await searchRecipes(query);
   };
@@ -101,7 +112,8 @@ const RecipeSearchPage = () => {
                           <h3 className="recipe-title">{r.title}</h3>
                           <div className="recipe-meta">
                             <span className="recipe-calories">{r.caloriesPerServing} kcal</span>
-                            {r.totalTime && <span className="recipe-time">{r.totalTime} min</span>}
+                            {(r.totalTime || r.prepTime) && <span className="recipe-time">{r.totalTime || r.prepTime} min</span>}
+                            {r._fallback && <span className="recipe-badge offline" title="Lokale dataset">Offline</span>}
                           </div>
                         </div>
                       </div>
