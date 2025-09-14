@@ -20,14 +20,8 @@ const RecipeSearchPage = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    // Allow empty query to surface fallback/local dataset
-    if (!query.trim()) {
-      setSearchQuery('');
-      await searchRecipes('');
-      return;
-    }
     setSearchQuery(query);
-    await searchRecipes(query);
+    await searchRecipes(query, filters);
   };
 
   return (

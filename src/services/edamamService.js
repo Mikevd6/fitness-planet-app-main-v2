@@ -33,10 +33,19 @@ class EdamamService {
   }
 
   // Build local fallback result from static dataset
-  buildLocalResult(query = '') {
+  buildLocalResult(options = {}) {
+    const { query = '', maxCalories, time } = options;
     const q = (query || '').toLowerCase();
+
     const filtered = localRecipes
-      .filter(r => !q || r.title.toLowerCase().includes(q))
+      .filter(r => {
+        const titleMatch = !q || r.title.toLowerCase().includes(q);
+        const calorieValue = parseInt(maxCalories, 10);
+        const timeValue = parseInt(time, 10);
+        const calorieMatch = !calorieValue || (r.calories && r.calories <= calorieValue);
+        const timeMatch = !timeValue || (r.prepTime && r.prepTime <= timeValue);
+        return titleMatch && calorieMatch && timeMatch;
+      })
       .map(r => ({
         id: `local-${r.id}`,
         uri: `local:recipe:${r.id}`,
@@ -76,7 +85,7 @@ class EdamamService {
     const credsPresent = Boolean(this.appId && this.appKey);
     try {
       if (!credsPresent) {
-        return this.buildLocalResult(options.query);
+        return this.buildLocalResult(options);
       }
       this.validateCredentials();
 
@@ -133,13 +142,11 @@ class EdamamService {
         to: data.to || 0
       };
     } catch (error) {
-  console.error('Recipe search error:', error);
-  // Fallback to local dataset if network/timeout/credential issue
-  return this.buildLocalResult(options.query);
+      console.error('Recipe search error:', error);
+      // Fallback to local dataset if network/timeout/credential issue
+      return this.buildLocalResult(options);
     }
-  }
-
-  // Get recipe by URI
+  }  // Get recipe by URI
   async getRecipeByUri(uri) {
     const credsPresent = Boolean(this.appId && this.appKey);
     try {

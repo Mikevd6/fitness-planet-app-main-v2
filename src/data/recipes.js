@@ -35,7 +35,7 @@ const recipes = [
     id: 2,
     title: "Proteïne Smoothie Bowl",
     description: "Romige smoothie bowl met eiwitpoeder en vers fruit.",
-    imageUrl: "/images/recipes/protein-smoothie.jpg",
+    imageUrl: "/images/recipes/default-recipe.jpg",
     calories: 450,
     prepTime: 10,
     macros: {
@@ -124,7 +124,7 @@ const recipes = [
     id: 6,
     title: "Proteïn Pannenkoeken",
     description: "Eiwitrijke pannenkoeken met Griekse yoghurt en fruit.",
-    imageUrl: "/images/recipes/protein-pancakes.jpg",
+    imageUrl: "/images/recipes/default-recipe.jpg",
     calories: 380,
     prepTime: 15,
     macros: {
