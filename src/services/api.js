@@ -63,8 +63,11 @@ apiClient.interceptors.response.use(
 // Helper to unwrap data and unify errors
 async function request(method, url, { data, params, config, silent, context } = {}) {
   try {
-    const response = await apiClient.request({ method, url, data, params, ...config });
-    return { success: true, data: response.data, status: response.status };
+  const response = await apiClient.request({ method, url, data, params, ...config });
+  // Be defensive in tests/mocked envs where a mock may not return full axios shape
+  const status = typeof response?.status === 'number' ? response.status : 200;
+  const payload = response?.data !== undefined ? response.data : (response ?? {});
+  return { success: true, data: payload, status };
   } catch (error) {
     handleError(error, { silent, context: context || `${method.toUpperCase()} ${url}` });
     return { success: false, error, status: error?.response?.status || 0 };
