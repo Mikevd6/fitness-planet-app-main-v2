@@ -1,2 +1,2 @@
 import '@testing-library/jest-dom';
-// axios is now manually mocked via src/__mocks__/axios.js
+// Axios is mapped to the manual mock via Jest moduleNameMapper in package.json

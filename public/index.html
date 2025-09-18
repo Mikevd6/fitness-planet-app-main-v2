@@ -4,9 +4,33 @@
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- Modern browsers supporting theme-color -->
-    <meta name="theme-color" content="#4f46e5" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#4f46e5" media="(prefers-color-scheme: dark)" />
+    <!-- Dynamic theme-color handled via script for supporting browsers (removed static meta tags for wider compatibility) -->
+    <script>
+      (function() {
+        function applyThemeColor() {
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (!meta) {
+            meta = document.createElement('meta');
+            meta.setAttribute('name', 'theme-color');
+            document.head.appendChild(meta);
+          }
+          meta.setAttribute('content', '#4f46e5');
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', applyThemeColor);
+        } else {
+          applyThemeColor();
+        }
+        if (window.matchMedia) {
+          var mq = window.matchMedia('(prefers-color-scheme: dark)');
+            if (mq.addEventListener) {
+              mq.addEventListener('change', applyThemeColor);
+            } else if (mq.addListener) {
+              mq.addListener(applyThemeColor);
+            }
+        }
+      })();
+    </script>
     <!-- Microsoft browsers -->
     <meta name="msapplication-navbutton-color" content="#4f46e5" />
     <!-- For older iOS Safari (< 15) -->

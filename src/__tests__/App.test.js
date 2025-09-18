@@ -1,9 +1,9 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
-import { Provider } from 'react-redux';
-import { store } from '../redux/store';
-import App from '../App';
+const React = require('react');
+const { render, screen } = require('@testing-library/react');
+require('@testing-library/jest-dom');
+const { Provider } = require('react-redux');
+const { store } = require('../redux/store');
+const App = require('../App').default || require('../App');
 
 // Mock the localStorage
 const mockLocalStorage = (() => {
@@ -27,11 +27,7 @@ describe('App Component', () => {
   });
   
   test('renders login when user is not logged in', () => {
-    render(
-      <Provider store={store}>
-        <App />
-      </Provider>
-    );
+  render(React.createElement(Provider, { store }, React.createElement(App)));
     expect(screen.getByText(/log in/i)).toBeInTheDocument();
   });
   
@@ -39,11 +35,7 @@ describe('App Component', () => {
     // Set the user in localStorage before rendering
     mockLocalStorage.getItem.mockReturnValue(JSON.stringify({ name: 'Test User' }));
     
-    render(
-      <Provider store={store}>
-        <App />
-      </Provider>
-    );
+  render(React.createElement(Provider, { store }, React.createElement(App)));
     expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
   });
 });

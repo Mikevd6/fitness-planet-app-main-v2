@@ -1,8 +1,8 @@
-import React from 'react';
-import { renderHook, act } from '@testing-library/react';
-import { MealPlanProvider, useMealPlan } from '../contexts/MealPlanContext';
+const React = require('react');
+const { renderHook, act } = require('@testing-library/react');
+const { MealPlanProvider, useMealPlan } = require('../contexts/MealPlanContext');
 
-const wrapper = ({ children }) => <MealPlanProvider>{children}</MealPlanProvider>;
+const wrapper = ({ children }) => React.createElement(MealPlanProvider, null, children);
 
 describe('MealPlanContext', () => {
   test('addMeal and removeMeal modify state', () => {
