@@ -38,7 +38,11 @@ body {
   transition: all 0.3s ease;
 }
 
-<<<<<<< Updated upstream
+.create-account-btn:hover {
+  background-color: #f3f4f6;
+  transform: translateY(-2px);
+}
+
 .login-card {
   background: white;
   border-radius: 16px;
@@ -47,11 +51,6 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.2);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
-=======
-.create-account-btn:hover {
-  background-color: #f3f4f6;
-  transform: translateY(-2px);
->>>>>>> Stashed changes
 }
 
 /* Logo */

@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useRecipe } from '../contexts/RecipeContext';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useRecipes } from '../contexts/RecipeContext';
 import '../styles/RecipeSearch.css';
 
 const RecipeSearchPage = () => {
-  const { user } = useAuth();
-  const { recipes, loading, searchRecipes } = useRecipe();
+  const { loading, searchRecipes } = useRecipes();
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     cuisineType: '',
@@ -44,12 +42,7 @@ const RecipeSearchPage = () => {
     { value: 'low-fat', label: 'Low Fat' }
   ];
 
-  useEffect(() => {
-    // Load initial recipes
-    handleSearch();
-  }, []);
-
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     try {
       const searchOptions = {
         query: searchTerm,
@@ -69,7 +62,12 @@ const RecipeSearchPage = () => {
       console.error('Search error:', error);
       setSearchResults([]);
     }
-  };
+  }, [searchTerm, filters, searchRecipes]);
+
+  useEffect(() => {
+    // Load initial recipes
+    handleSearch();
+  }, [handleSearch]);
 
   const handleFilterChange = (filterName, value) => {
     setFilters(prev => ({

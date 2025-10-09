@@ -1,4 +1,4 @@
-﻿// Calorie and Macro Calculator using Mifflin-St Jeor Equation
+// Calorie and Macro Calculator using Mifflin-St Jeor Equation
 class CalorieCalculator {
   // Activity level multipliers
   static ACTIVITY_LEVELS = {

@@ -1,4 +1,4 @@
-﻿// Edamam Recipe API Service
+// Edamam Recipe API Service
 class EdamamService {
   constructor() {
     this.baseUrl = process.env.REACT_APP_EDAMAM_BASE_URL || 'https://api.edamam.com';

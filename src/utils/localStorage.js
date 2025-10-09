@@ -384,16 +384,6 @@ const storage = {
     const users = storage.getUsers() || [];
     users.push(user);
     localStorage.setItem('users', JSON.stringify(users));
-  },
-  
-  // Profiel opslaan en ophalen
-  getProfile: () => {
-    const profile = localStorage.getItem('userProfile');
-    return profile ? JSON.parse(profile) : null;
-  },
-  
-  setProfile: (profile) => {
-    localStorage.setItem('userProfile', JSON.stringify(profile));
   }
 };
 
