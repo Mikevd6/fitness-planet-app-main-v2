@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useMealPlan } from '../contexts/MealPlanContext';
 import { useAuth } from '../contexts/AuthContext';
 import '../styles/MealPlan.css';
 
 const MealPlanPage = () => {
-  const { user } = useAuth();
+  useAuth();
   const { weekMenu, loading, dispatch, actionTypes } = useMealPlan();
   const [selectedDay, setSelectedDay] = useState('monday');
   const [view, setView] = useState('week'); // 'week' or 'day'
@@ -32,8 +32,8 @@ const MealPlanPage = () => {
     
     // For demo purposes, add a placeholder recipe
     const demoRecipe = {
-      id: demo-,
-      title: Demo  recept,
+      id: 'demo-recipe',
+      title: 'Demo recept',
       calories: 300,
       prepTime: 20,
       image: '/images/recipes/default-recipe.jpg'
@@ -83,13 +83,13 @@ const MealPlanPage = () => {
           
           <div className="view-controls">
             <button 
-              className={tn }
+              className={`btn ${view === 'week' ? 'active' : ''}`}
               onClick={() => setView('week')}
             >
               Weekoverzicht
             </button>
             <button 
-              className={tn }
+              className={`btn ${view === 'day' ? 'active' : ''}`}
               onClick={() => setView('day')}
             >
               Dag detail

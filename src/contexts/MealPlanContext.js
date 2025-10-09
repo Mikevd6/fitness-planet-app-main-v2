@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useReducer, useEffect } from 'react';
+﻿import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { storage } from '../utils/localStorage';
 import CalorieCalculator from '../utils/calorieCalculator';
 import { edamamService } from '../services/edamamService';
@@ -145,10 +145,11 @@ export const MealPlanProvider = ({ children }) => {
     loadMealPlanSettings();
   }, []);
 
-  // Recalculate nutrition when week menu changes
+  // Recalculate nutrition when week menu or settings change
   useEffect(() => {
     calculateNutritionSummary();
-  }, [state.weekMenu]);
+  // eslint-disable-next-line no-use-before-define
+  }, [calculateNutritionSummary]);
 
   // Load week menu from storage
   const loadWeekMenu = () => {
@@ -247,76 +248,8 @@ export const MealPlanProvider = ({ children }) => {
   };
 
   // Generate automatic meal plan based on user goals
-  const generateAutomaticMealPlan = async (userProfile) => {
-    dispatch({ type: MEAL_PLAN_ACTIONS.SET_GENERATING, payload: true });
-    dispatch({ type: MEAL_PLAN_ACTIONS.CLEAR_ERROR });
-
-    try {
-      // Calculate nutrition plan
-      const nutritionPlan = CalorieCalculator.calculateNutritionPlan(userProfile);
-      
-      if (!nutritionPlan.success) {
-        throw new Error(nutritionPlan.error);
-      }
-
-      // Get weekly meal targets
-      const weeklyTargets = CalorieCalculator.getWeeklyMealTargets(nutritionPlan.plan.calorieGoal);
-      
-      // Generate menu for each day
-      const generatedMenu = {};
-      const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-      const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
-
-      for (const day of days) {
-        generatedMenu[day] = {};
-        
-        for (const mealType of mealTypes) {
-          const mealTarget = weeklyTargets[day][mealType];
-          
-          // Get recipes for this meal type and calorie range
-          const recipeResult = await edamamService.searchRecipes({
-            query: this.getMealTypeQuery(mealType),
-            mealType: mealType,
-            calories: ${mealTarget.min}-,
-            diet: userProfile.dietPreferences?.[0] || '',
-            health: userProfile.allergens ? userProfile.allergens.map(a => ${a}-free).join(',') : '',
-            from: 0,
-            to: 10
-          });
-
-          if (recipeResult.success && recipeResult.recipes.length > 0) {
-            // Select a random recipe from the results
-            const randomIndex = Math.floor(Math.random() * recipeResult.recipes.length);
-            generatedMenu[day][mealType] = recipeResult.recipes[randomIndex];
-          } else {
-            // Use fallback/dummy recipe if API fails
-            generatedMenu[day][mealType] = this.getFallbackRecipe(mealType, mealTarget.target);
-          }
-        }
-      }
-
-      // Save the generated menu
-      saveWeekMenu(generatedMenu);
-      
-      // Update settings with new nutrition plan
-      updateMealPlanSettings({
-        calorieGoal: nutritionPlan.plan.calorieGoal,
-        macroTargets: nutritionPlan.plan.macroTargets
-      });
-
-      dispatch({ type: MEAL_PLAN_ACTIONS.SET_GENERATING, payload: false });
-      return { success: true, menu: generatedMenu };
-
-    } catch (error) {
-      console.error('Error generating meal plan:', error);
-      dispatch({ type: MEAL_PLAN_ACTIONS.SET_ERROR, payload: error.message });
-      dispatch({ type: MEAL_PLAN_ACTIONS.SET_GENERATING, payload: false });
-      return { success: false, error: error.message };
-    }
-  };
-
   // Helper function to get search query for meal type
-  getMealTypeQuery = (mealType) => {
+  function getMealTypeQuery(mealType) {
     const queries = {
       breakfast: 'healthy breakfast',
       lunch: 'healthy lunch',
@@ -324,13 +257,13 @@ export const MealPlanProvider = ({ children }) => {
       snack: 'healthy snack'
     };
     return queries[mealType] || 'healthy meal';
-  };
+  }
 
   // Fallback recipe generator
-  getFallbackRecipe = (mealType, targetCalories) => {
+  function getFallbackRecipe(mealType, targetCalories) {
     const fallbackRecipes = {
       breakfast: {
-        id: allback-breakfast-,
+        id: 'fallback-breakfast',
         title: 'Healthy Oatmeal Bowl',
         description: 'Nutritious oatmeal with fruits and nuts',
         calories: targetCalories,
@@ -339,7 +272,7 @@ export const MealPlanProvider = ({ children }) => {
         mealType: ['breakfast']
       },
       lunch: {
-        id: allback-lunch-,
+        id: 'fallback-lunch',
         title: 'Garden Salad with Protein',
         description: 'Fresh salad with lean protein',
         calories: targetCalories,
@@ -348,7 +281,7 @@ export const MealPlanProvider = ({ children }) => {
         mealType: ['lunch']
       },
       dinner: {
-        id: allback-dinner-,
+        id: 'fallback-dinner',
         title: 'Grilled Chicken with Vegetables',
         description: 'Balanced dinner with lean protein and vegetables',
         calories: targetCalories,
@@ -357,7 +290,7 @@ export const MealPlanProvider = ({ children }) => {
         mealType: ['dinner']
       },
       snack: {
-        id: allback-snack-,
+        id: 'fallback-snack',
         title: 'Mixed Nuts and Fruit',
         description: 'Healthy snack with nuts and seasonal fruit',
         calories: targetCalories,
@@ -368,6 +301,78 @@ export const MealPlanProvider = ({ children }) => {
     };
 
     return fallbackRecipes[mealType] || fallbackRecipes.snack;
+  }
+
+  const generateAutomaticMealPlan = async (userProfile) => {
+    dispatch({ type: MEAL_PLAN_ACTIONS.SET_GENERATING, payload: true });
+    dispatch({ type: MEAL_PLAN_ACTIONS.CLEAR_ERROR });
+
+    try {
+      // Calculate nutrition plan
+      const nutritionPlan = CalorieCalculator.calculateNutritionPlan(userProfile);
+      if (!nutritionPlan.success) {
+        throw new Error(nutritionPlan.error);
+      }
+
+      // Get weekly meal targets
+      const weeklyTargets = CalorieCalculator.getWeeklyMealTargets(nutritionPlan.plan.calorieGoal);
+
+      // Generate menu for each day
+      const generatedMenu = {};
+      const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+      const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
+
+      for (const day of days) {
+        generatedMenu[day] = {};
+        for (const mealType of mealTypes) {
+          const mealTarget = weeklyTargets[day][mealType];
+
+          // Build calorie range (prefer min-max, fallback to open-ended min)
+          const calorieRange = mealTarget?.min && mealTarget?.max
+            ? `${mealTarget.min}-${mealTarget.max}`
+            : mealTarget?.min
+              ? `${mealTarget.min}-`
+              : '';
+
+            // Get recipes for this meal type and calorie range
+          const recipeResult = await edamamService.searchRecipes({
+            query: getMealTypeQuery(mealType),
+            mealType,
+            calories: calorieRange,
+            diet: userProfile.dietPreferences?.[0] || '',
+            health: userProfile.allergens && userProfile.allergens.length
+              ? userProfile.allergens.map(a => `${a}-free`)
+              : [],
+            from: 0,
+            to: 10
+          });
+
+          if (recipeResult.success && recipeResult.recipes.length > 0) {
+            const randomIndex = Math.floor(Math.random() * recipeResult.recipes.length);
+            generatedMenu[day][mealType] = recipeResult.recipes[randomIndex];
+          } else {
+            generatedMenu[day][mealType] = getFallbackRecipe(mealType, mealTarget?.target || mealTarget?.min || 0);
+          }
+        }
+      }
+
+      // Save the generated menu
+      saveWeekMenu(generatedMenu);
+
+      // Update settings with new nutrition plan
+      updateMealPlanSettings({
+        calorieGoal: nutritionPlan.plan.calorieGoal,
+        macroTargets: nutritionPlan.plan.macroTargets
+      });
+
+      dispatch({ type: MEAL_PLAN_ACTIONS.SET_GENERATING, payload: false });
+      return { success: true, menu: generatedMenu };
+    } catch (error) {
+      console.error('Error generating automatic meal plan:', error);
+      dispatch({ type: MEAL_PLAN_ACTIONS.SET_ERROR, payload: error.message });
+      dispatch({ type: MEAL_PLAN_ACTIONS.SET_GENERATING, payload: false });
+      return { success: false, error: error.message };
+    }
   };
 
   // Save current menu with a name
@@ -425,16 +430,36 @@ export const MealPlanProvider = ({ children }) => {
   // Generate shopping list from current week menu
   const generateShoppingList = () => {
     try {
+      // Categorize ingredient for shopping list
+      function categorizeIngredient(ingredient) {
+        const categories = {
+          'Produce': ['tomato', 'onion', 'garlic', 'lettuce', 'spinach', 'carrot', 'bell pepper', 'cucumber', 'apple', 'banana', 'lemon', 'lime', 'avocado', 'broccoli', 'cauliflower'],
+            'Meat & Seafood': ['chicken', 'beef', 'pork', 'fish', 'salmon', 'tuna', 'shrimp', 'turkey', 'ham', 'bacon'],
+            'Dairy': ['milk', 'cheese', 'yogurt', 'butter', 'cream', 'eggs'],
+            'Pantry': ['rice', 'pasta', 'bread', 'flour', 'sugar', 'salt', 'pepper', 'oil', 'vinegar', 'spices', 'herbs'],
+            'Frozen': ['frozen vegetables', 'frozen fruits', 'ice cream'],
+            'Beverages': ['water', 'juice', 'coffee', 'tea', 'soda']
+        };
+
+        const lowerIngredient = ingredient.toLowerCase();
+        for (const [category, items] of Object.entries(categories)) {
+          if (items.some(item => lowerIngredient.includes(item))) {
+            return category;
+          }
+        }
+        return 'Other';
+      }
+
       const ingredients = new Map();
-      
+
       Object.values(state.weekMenu).forEach(dayMeals => {
         Object.values(dayMeals).forEach(recipe => {
           if (recipe && recipe.ingredients) {
             recipe.ingredients.forEach(ingredient => {
-              const ingredientName = typeof ingredient === 'string' 
+              const ingredientName = typeof ingredient === 'string'
                 ? ingredient.trim()
                 : ingredient.name || ingredient.toString();
-              
+
               if (ingredients.has(ingredientName)) {
                 ingredients.set(ingredientName, {
                   ...ingredients.get(ingredientName),
@@ -444,7 +469,7 @@ export const MealPlanProvider = ({ children }) => {
                 ingredients.set(ingredientName, {
                   name: ingredientName,
                   quantity: 1,
-                  category: this.categorizeIngredient(ingredientName),
+                  category: categorizeIngredient(ingredientName),
                   checked: false
                 });
               }
@@ -458,34 +483,13 @@ export const MealPlanProvider = ({ children }) => {
 
       storage.setShoppingList(shoppingList);
       dispatch({ type: MEAL_PLAN_ACTIONS.GENERATE_SHOPPING_LIST, payload: shoppingList });
-      
+
       return { success: true, list: shoppingList };
     } catch (error) {
+      console.error('Error generating shopping list:', error);
       dispatch({ type: MEAL_PLAN_ACTIONS.SET_ERROR, payload: error.message });
       return { success: false, error: error.message };
     }
-  };
-
-  // Categorize ingredient for shopping list
-  categorizeIngredient = (ingredient) => {
-    const categories = {
-      'Produce': ['tomato', 'onion', 'garlic', 'lettuce', 'spinach', 'carrot', 'bell pepper', 'cucumber', 'apple', 'banana', 'lemon', 'lime', 'avocado', 'broccoli', 'cauliflower'],
-      'Meat & Seafood': ['chicken', 'beef', 'pork', 'fish', 'salmon', 'tuna', 'shrimp', 'turkey', 'ham', 'bacon'],
-      'Dairy': ['milk', 'cheese', 'yogurt', 'butter', 'cream', 'eggs'],
-      'Pantry': ['rice', 'pasta', 'bread', 'flour', 'sugar', 'salt', 'pepper', 'oil', 'vinegar', 'spices', 'herbs'],
-      'Frozen': ['frozen vegetables', 'frozen fruits', 'ice cream'],
-      'Beverages': ['water', 'juice', 'coffee', 'tea', 'soda']
-    };
-
-    const lowerIngredient = ingredient.toLowerCase();
-    
-    for (const [category, items] of Object.entries(categories)) {
-      if (items.some(item => lowerIngredient.includes(item))) {
-        return category;
-      }
-    }
-    
-    return 'Other';
   };
 
   // Update meal plan settings
@@ -493,7 +497,7 @@ export const MealPlanProvider = ({ children }) => {
     try {
       const updatedSettings = { ...state.mealPlanSettings, ...newSettings };
       localStorage.setItem('fitnessapp_meal_plan_settings', JSON.stringify(updatedSettings));
-      
+
       dispatch({
         type: MEAL_PLAN_ACTIONS.UPDATE_MEAL_PLAN_SETTINGS,
         payload: newSettings
@@ -507,7 +511,7 @@ export const MealPlanProvider = ({ children }) => {
   };
 
   // Calculate nutrition summary for current week
-  const calculateNutritionSummary = () => {
+  const calculateNutritionSummary = useCallback(() => {
     try {
       const summary = {
         totalCalories: 0,
@@ -542,8 +546,8 @@ export const MealPlanProvider = ({ children }) => {
           };
           summary.totalCalories += dayCalories;
           summary.totalMacros.protein += dayMacros.protein;
-          summary.totalMacros.carbs += dayMacros.carbs;
-          summary.totalMacros.fat += dayMacros.fat;
+            summary.totalMacros.carbs += dayMacros.carbs;
+            summary.totalMacros.fat += dayMacros.fat;
           totalDays++;
         }
       });
@@ -556,7 +560,6 @@ export const MealPlanProvider = ({ children }) => {
           fat: Math.round(summary.totalMacros.fat / totalDays)
         };
 
-        // Compare with goals
         summary.goalComparison = {
           calories: {
             target: state.mealPlanSettings.calorieGoal,
@@ -593,7 +596,7 @@ export const MealPlanProvider = ({ children }) => {
       console.error('Error calculating nutrition summary:', error);
       return {};
     }
-  };
+  }, [state.weekMenu, state.mealPlanSettings]);
 
   // Clear current week menu
   const clearWeekMenu = () => {
