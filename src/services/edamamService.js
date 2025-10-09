@@ -1,14 +1,11 @@
 ﻿// Edamam Recipe API Service
-import localRecipes from '../data/recipes';
-
 class EdamamService {
   constructor() {
     this.baseUrl = process.env.REACT_APP_EDAMAM_BASE_URL || 'https://api.edamam.com';
     this.appId = process.env.REACT_APP_EDAMAM_APP_ID;
     this.appKey = process.env.REACT_APP_EDAMAM_APP_KEY;
-    this.recipeSearchUrl = `${this.baseUrl}/search`;
+    this.recipeSearchUrl = `${this.baseUrl}/api/recipes/v2`;
     this.nutritionUrl = `${this.baseUrl}/api/nutrition-data/v2/nutrients`;
-    this.requestTimeoutMs = 8000; // 8s timeout safeguard
   }
 
   // Validate API credentials
@@ -18,75 +15,9 @@ class EdamamService {
     }
   }
 
-  // Internal: fetch with timeout
-  async fetchWithTimeout(url, opts = {}) {
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), this.requestTimeoutMs);
-    try {
-      const res = await fetch(url, { ...opts, signal: controller.signal });
-      clearTimeout(id);
-      return res;
-    } catch (err) {
-      clearTimeout(id);
-      throw err;
-    }
-  }
-
-  // Build local fallback result from static dataset
-  buildLocalResult(options = {}) {
-    const { query = '', maxCalories, time } = options;
-    const q = (query || '').toLowerCase();
-
-    const filtered = localRecipes
-      .filter(r => {
-        const titleMatch = !q || r.title.toLowerCase().includes(q);
-        const calorieValue = parseInt(maxCalories, 10);
-        const timeValue = parseInt(time, 10);
-        const calorieMatch = !calorieValue || (r.calories && r.calories <= calorieValue);
-        const timeMatch = !timeValue || (r.prepTime && r.prepTime <= timeValue);
-        return titleMatch && calorieMatch && timeMatch;
-      })
-      .map(r => ({
-        id: `local-${r.id}`,
-        uri: `local:recipe:${r.id}`,
-        title: r.title,
-        description: r.description,
-        image: r.imageUrl,
-        source: 'Local Dataset',
-        prepTime: r.prepTime || null,
-        totalTime: r.prepTime || null,
-        calories: r.calories || 0,
-        caloriesPerServing: r.calories || 0,
-        ingredients: r.ingredients || [],
-        instructions: r.instructions || [],
-        cuisineType: [],
-        mealType: [],
-        dishType: [],
-        dietLabels: [],
-        healthLabels: [],
-        macros: r.macros || {},
-        nutrients: {},
-        tags: [],
-        isFavorite: false,
-  addedAt: new Date().toISOString(),
-  _fallback: true
-      }));
-    return {
-      success: true,
-      recipes: filtered,
-      totalResults: filtered.length,
-      from: 0,
-      to: filtered.length
-    };
-  }
-
-  // Search recipes with advanced filters (with graceful fallback)
+  // Search recipes with advanced filters
   async searchRecipes(options = {}) {
-    const credsPresent = Boolean(this.appId && this.appKey);
     try {
-      if (!credsPresent) {
-        return this.buildLocalResult(options);
-      }
       this.validateCredentials();
 
       const {
@@ -126,10 +57,10 @@ class EdamamService {
         if (value) params.append(key, value);
       });
 
-  const response = await this.fetchWithTimeout(`${this.recipeSearchUrl}?${params.toString()}`);
+      const response = await fetch(`${this.recipeSearchUrl}?${params.toString()}`);
       
       if (!response.ok) {
-        throw new Error(`API request failed: ${response.status}`);
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -143,24 +74,17 @@ class EdamamService {
       };
     } catch (error) {
       console.error('Recipe search error:', error);
-      // Fallback to local dataset if network/timeout/credential issue
-      return this.buildLocalResult(options);
+      return {
+        success: false,
+        error: error.message,
+        recipes: []
+      };
     }
-  }  // Get recipe by URI
+  }
+
+  // Get recipe by URI
   async getRecipeByUri(uri) {
-    const credsPresent = Boolean(this.appId && this.appKey);
     try {
-      if (!credsPresent) {
-        const localId = (uri || '').split(':').pop();
-        const local = localRecipes.find(r => `${r.id}` === localId);
-        if (local) {
-          return {
-            success: true,
-            recipe: this.buildLocalResult(local.title).recipes.find(r => r.id === `local-${local.id}`) || null
-          };
-        }
-        return { success: false, error: 'Recipe not found' };
-      }
       this.validateCredentials();
 
       const params = new URLSearchParams({
@@ -170,10 +94,10 @@ class EdamamService {
         uri: uri
       });
 
-  const response = await this.fetchWithTimeout(`${this.recipeSearchUrl}?${params.toString()}`);
+      const response = await fetch(`${this.baseUrl}/api/recipes/v2/by-uri?${params.toString()}`);
       
       if (!response.ok) {
-        throw new Error(`API request failed: ${response.status}`);
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -184,8 +108,12 @@ class EdamamService {
         recipe: recipes[0] || null
       };
     } catch (error) {
-  console.error('Recipe fetch error:', error);
-  return { success: false, error: error.message, recipe: null };
+      console.error('Recipe fetch error:', error);
+      return {
+        success: false,
+        error: error.message,
+        recipe: null
+      };
     }
   }
 
@@ -199,7 +127,7 @@ class EdamamService {
         app_key: this.appKey
       });
 
-  const response = await this.fetchWithTimeout(`${this.nutritionUrl}?${params.toString()}`, {
+      const response = await fetch(`${this.nutritionUrl}?${params.toString()}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -210,7 +138,7 @@ class EdamamService {
       });
 
       if (!response.ok) {
-        throw new Error(`Nutrition API request failed: ${response.status}`);
+        throw new Error(`Nutrition API request failed: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -220,8 +148,12 @@ class EdamamService {
         nutrition: this.transformNutritionData(data)
       };
     } catch (error) {
-  console.error('Nutrition analysis error:', error);
-  return { success: false, error: error.message, nutrition: null };
+      console.error('Nutrition analysis error:', error);
+      return {
+        success: false,
+        error: error.message,
+        nutrition: null
+      };
     }
   }
 
@@ -318,12 +250,12 @@ class EdamamService {
       mealType: mealType,
       diet: dietPreferences.length > 0 ? dietPreferences[0] : '',
       health: healthRestrictions.length > 0 ? healthRestrictions.join(',') : '',
-      calories: calorieGoal ? `${calorieGoal - 200}-${calorieGoal + 200}` : '',
+      calories: calorieGoal ? `0-${calorieGoal}` : '',
       from: 0,
       to: 12
     };
 
-  return await this.searchRecipes(searchOptions);
+    return await this.searchRecipes(searchOptions);
   }
 
   // Get alternative recipes similar to a given recipe
@@ -337,7 +269,7 @@ class EdamamService {
       to: count + 5 // Get a few extra to filter out the original
     };
 
-  const result = await this.searchRecipes(searchOptions);
+    const result = await this.searchRecipes(searchOptions);
     
     if (result.success) {
       // Filter out the original recipe and return only the requested count
