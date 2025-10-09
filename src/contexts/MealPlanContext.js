@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { storage } from '../utils/localStorage';
 import CalorieCalculator from '../utils/calorieCalculator';
 import { edamamService } from '../services/edamamService';
