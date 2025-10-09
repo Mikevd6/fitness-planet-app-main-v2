@@ -2,8 +2,6 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
-import { store } from '../redux/store';
-import App from '../App';
 
 // Mock the localStorage
 const mockLocalStorage = (() => {
@@ -24,9 +22,14 @@ describe('App Component', () => {
   beforeEach(() => {
     mockLocalStorage.clear();
     jest.clearAllMocks();
+    // Manually clear only the App and store modules to avoid loading a second React instance
+    delete require.cache[require.resolve('../redux/store')];
+    delete require.cache[require.resolve('../App')];
   });
   
   test('renders login when user is not logged in', () => {
+    const { store } = require('../redux/store');
+    const App = require('../App').default;
     render(
       <Provider store={store}>
         <App />
@@ -35,15 +38,16 @@ describe('App Component', () => {
     expect(screen.getByText(/log in/i)).toBeInTheDocument();
   });
   
-  test('renders dashboard when user is logged in', () => {
-    // Set the user in localStorage before rendering
-    mockLocalStorage.getItem.mockReturnValue(JSON.stringify({ name: 'Test User' }));
-    
+  test('renders dashboard when user is logged in', async () => {
+    // Seed only the expected user key in localStorage before requiring the store
+    mockLocalStorage.setItem('user', JSON.stringify({ name: 'Test User', token: 'fake-token', isAuthenticated: true }));
+    const { store } = require('../redux/store');
+    const App = require('../App').default;
     render(
       <Provider store={store}>
         <App />
       </Provider>
     );
-    expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
+    expect(await screen.findByText(/dashboard/i)).toBeInTheDocument();
   });
 });
