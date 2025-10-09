@@ -39,15 +39,35 @@ describe('App Component', () => {
   });
   
   test('renders dashboard when user is logged in', async () => {
-    // Seed only the expected user key in localStorage before requiring the store
-    mockLocalStorage.setItem('user', JSON.stringify({ name: 'Test User', token: 'fake-token', isAuthenticated: true }));
+    localStorage.setItem('user', JSON.stringify({ email: 'demo@fitnessplanet.com' }));
+    // If token check exists, also:
+    // localStorage.setItem('token', 'fake-token');
+
     const { store } = require('../redux/store');
     const App = require('../App').default;
+
     render(
       <Provider store={store}>
         <App />
       </Provider>
     );
+
     expect(await screen.findByText(/dashboard/i)).toBeInTheDocument();
   });
 });
+
+// In your App component file
+// import { useSelector } from 'react-redux';
+// import { RootState } from './redux/store';
+
+// const App = () => {
+//   const user = useSelector((state: RootState) => state.user);
+
+//   return (
+//     <div>
+//       {user ? <Dashboard /> : <Login />}
+//     </div>
+//   );
+// };
+
+// export default App;

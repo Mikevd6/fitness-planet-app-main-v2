@@ -460,7 +460,7 @@ export const RecipeProvider = ({ children }) => {
 };
 
 // Custom hook to use recipe context
-export const useRecipes = () => {
+export const useRecipe = () => {
   const context = useContext(RecipeContext);
   if (!context) {
     throw new Error('useRecipes must be used within a RecipeProvider');
