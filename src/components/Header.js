@@ -39,12 +39,14 @@ const Header = () => {
             </Link>
           </div>
 
-    <nav className={`nav ${menuOpen ? 'open' : ''}`}>
+          <nav className={
+av }>
             <ul className="nav-list">
               <li className="nav-item">
                 <Link 
                   to="/dashboard" 
-      className={`nav-link ${isActive('/dashboard') ? 'active' : ''}`}
+                  className={
+av-link }
                   onClick={() => setMenuOpen(false)}
                 >
                   Dashboard
@@ -53,7 +55,8 @@ const Header = () => {
               <li className="nav-item">
                 <Link 
                   to="/workouts" 
-      className={`nav-link ${isActive('/workouts') ? 'active' : ''}`}
+                  className={
+av-link }
                   onClick={() => setMenuOpen(false)}
                 >
                   Workouts
@@ -62,7 +65,8 @@ const Header = () => {
               <li className="nav-item">
                 <Link 
                   to="/voeding" 
-      className={`nav-link ${isActive('/voeding') ? 'active' : ''}`}
+                  className={
+av-link }
                   onClick={() => setMenuOpen(false)}
                 >
                   Voeding
@@ -71,7 +75,8 @@ const Header = () => {
               <li className="nav-item">
                 <Link 
                   to="/recepten" 
-      className={`nav-link ${isActive('/recepten') ? 'active' : ''}`}
+                  className={
+av-link }
                   onClick={() => setMenuOpen(false)}
                 >
                   Recepten
@@ -80,7 +85,8 @@ const Header = () => {
               <li className="nav-item">
                 <Link 
                   to="/maaltijdplan" 
-      className={`nav-link ${isActive('/maaltijdplan') ? 'active' : ''}`}
+                  className={
+av-link }
                   onClick={() => setMenuOpen(false)}
                 >
                   Maaltijdplan
@@ -89,7 +95,8 @@ const Header = () => {
               <li className="nav-item">
                 <Link 
                   to="/voortgang" 
-      className={`nav-link ${isActive('/voortgang') ? 'active' : ''}`}
+                  className={
+av-link }
                   onClick={() => setMenuOpen(false)}
                 >
                   Voortgang
@@ -98,7 +105,8 @@ const Header = () => {
               <li className="nav-item">
                 <Link 
                   to="/profiel" 
-      className={`nav-link ${isActive('/profiel') ? 'active' : ''}`}
+                  className={
+av-link }
                   onClick={() => setMenuOpen(false)}
                 >
                   Profiel

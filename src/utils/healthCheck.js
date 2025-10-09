@@ -1,4 +1,4 @@
-import { apiDomain } from '../services/api';
+import { apiService } from './apiService';
 
 class HealthCheckService {
   constructor() {
@@ -38,11 +38,11 @@ class HealthCheckService {
     
     try {
       const startTime = performance.now();
-      const response = await apiDomain.system.health();
+      const response = await apiService.healthCheck();
       const endTime = performance.now();
       
       responseTime = Math.round(endTime - startTime);
-      status = response?.data?.status === 'ok' ? 'up' : 'degraded';
+      status = response.data?.status === 'ok' ? 'up' : 'degraded';
     } catch (error) {
       console.error('Health check failed:', error);
       status = 'down';

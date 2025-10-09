@@ -20,17 +20,6 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${user.token}`;
     }
     
-    // Add required X-Api-Key for POST requests to auth/user endpoints
-    const method = (config.method || '').toLowerCase();
-    const url = config.url || '';
-    if (
-      method === 'post' &&
-      (/\/auth\//.test(url) || /\/user(\/|$)/.test(url))
-    ) {
-      config.headers['X-Api-Key'] = 'fitnessplanet:7m997U9ozv6dJ9JLyWh9';
-      config.headers['Content-Type'] = 'application/json';
-    }
-
     // Log request in development
     if (process.env.NODE_ENV === 'development') {
       console.log(`API Request: ${config.method.toUpperCase()} ${config.url}`);

@@ -17,50 +17,102 @@ import './styles/App.css';
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
+  
   if (loading) {
     return (
       <div className="loading">
         <div className="loading-spinner"></div>
-        <p>Bezig met laden...</p>
+        <p>Fitness Planet wordt geladen...</p>
       </div>
     );
   }
+  
   return user ? children : <Navigate to="/login" replace />;
 };
 
-function App() {
+// Main App Content Component
+const AppContent = () => {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="loading">
+        <div className="loading-spinner"></div>
+        <p>Fitness Planet wordt geladen...</p>
+      </div>
+    );
+  }
+
   return (
-    <AuthProvider>
-      <RecipeProvider>
-        <MealPlanProvider>
-          <Router>
-            <div className="app-shell">
+    <Router>
+      <div className="App">
+        {user ? (
+          <RecipeProvider>
+            <MealPlanProvider>
               <Header />
               <main className="main-content">
                 <Routes>
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                  <Route path="/workouts" element={<ProtectedRoute><WorkoutTracker /></ProtectedRoute>} />
-                  <Route path="/voeding" element={<ProtectedRoute><NutritionTracker /></ProtectedRoute>} />
-                  <Route path="/voortgang" element={<ProtectedRoute><ProgressTracker /></ProtectedRoute>} />
-                  <Route path="/profiel" element={<ProtectedRoute><ProfileSettings /></ProtectedRoute>} />
-                  <Route path="/recepten" element={<ProtectedRoute><RecipeSearchPage /></ProtectedRoute>} />
-                  <Route path="/maaltijdplan" element={<ProtectedRoute><MealPlanPage /></ProtectedRoute>} />
-                  {/* Aliassen Engels -> Nederlands */}
-                  <Route path="/meal-plan" element={<Navigate to="/maaltijdplan" replace />} />
-                  <Route path="/recipes" element={<Navigate to="/recepten" replace />} />
-                  <Route path="/nutrition" element={<Navigate to="/voeding" replace />} />
-                  <Route path="/progress" element={<Navigate to="/voortgang" replace />} />
-                  <Route path="/profile" element={<Navigate to="/profiel" replace />} />
-                  <Route path="/workout" element={<Navigate to="/workouts" replace />} />
-                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="/" element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/dashboard" element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/workouts" element={
+                    <ProtectedRoute>
+                      <WorkoutTracker />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/voeding" element={
+                    <ProtectedRoute>
+                      <NutritionTracker />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/recepten" element={
+                    <ProtectedRoute>
+                      <RecipeSearchPage />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/maaltijdplan" element={
+                    <ProtectedRoute>
+                      <MealPlanPage />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/voortgang" element={
+                    <ProtectedRoute>
+                      <ProgressTracker />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/profiel" element={
+                    <ProtectedRoute>
+                      <ProfileSettings />
+                    </ProtectedRoute>
+                  } />
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
               </main>
-            </div>
-          </Router>
-        </MealPlanProvider>
-      </RecipeProvider>
+            </MealPlanProvider>
+          </RecipeProvider>
+        ) : (
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        )}
+      </div>
+    </Router>
+  );
+};
+
+// Main App Component with Providers
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
     </AuthProvider>
   );
 }
