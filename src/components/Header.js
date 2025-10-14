@@ -1,4 +1,5 @@
-﻿/* eslint-disable no-undef */
+﻿/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -40,14 +41,12 @@ const Header = () => {
             </Link>
           </div>
 
-          <nav className={
-av }>
+          <nav className={menuOpen ? 'nav open' : 'nav'}>
             <ul className="nav-list">
               <li className="nav-item">
                 <Link 
                   to="/dashboard" 
-                  className={
-av-link }
+                  className="av-link"
                   onClick={() => setMenuOpen(false)}
                 >
                   Dashboard
@@ -56,8 +55,7 @@ av-link }
               <li className="nav-item">
                 <Link 
                   to="/workouts" 
-                  className={
-av-link }
+                  className="av-link"
                   onClick={() => setMenuOpen(false)}
                 >
                   Workouts
@@ -66,8 +64,7 @@ av-link }
               <li className="nav-item">
                 <Link 
                   to="/voeding" 
-                  className={
-av-link }
+                  className="av-link"
                   onClick={() => setMenuOpen(false)}
                 >
                   Voeding
@@ -76,8 +73,7 @@ av-link }
               <li className="nav-item">
                 <Link 
                   to="/recepten" 
-                  className={
-av-link }
+                  className="av-link"
                   onClick={() => setMenuOpen(false)}
                 >
                   Recepten
@@ -86,8 +82,7 @@ av-link }
               <li className="nav-item">
                 <Link 
                   to="/maaltijdplan" 
-                  className={
-av-link }
+                  className="av-link"
                   onClick={() => setMenuOpen(false)}
                 >
                   Maaltijdplan
@@ -96,8 +91,7 @@ av-link }
               <li className="nav-item">
                 <Link 
                   to="/voortgang" 
-                  className={
-av-link }
+                  className="av-link"
                   onClick={() => setMenuOpen(false)}
                 >
                   Voortgang
@@ -106,8 +100,7 @@ av-link }
               <li className="nav-item">
                 <Link 
                   to="/profiel" 
-                  className={
-av-link }
+                  className="av-link"
                   onClick={() => setMenuOpen(false)}
                 >
                   Profiel

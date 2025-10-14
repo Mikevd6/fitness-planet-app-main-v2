@@ -1,4 +1,4 @@
-﻿import { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
+﻿import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { storage } from '../utils/localStorage';
 import CalorieCalculator from '../utils/calorieCalculator';
 import { edamamService } from '../services/edamamService';
@@ -138,8 +138,9 @@ const MealPlanContext = createContext();
 export const MealPlanProvider = ({ children }) => {
   const [state, dispatch] = useReducer(mealPlanReducer, initialState);
 
-  // Define calculateNutritionSummary BEFORE any use
-  const calculateNutritionSummary = useCallback(() => {
+  // Define BEFORE any usage (hoisted function declaration)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  function calculateNutritionSummary() {
     try {
       const summary = {
         totalCalories: 0,
@@ -152,11 +153,11 @@ export const MealPlanProvider = ({ children }) => {
 
       let totalDays = 0;
 
-      Object.entries(state.weekMenu).forEach(([day, meals]) => {
+      Object.entries(state.weekMenu || {}).forEach(([day, meals]) => {
         let dayCalories = 0;
         let dayMacros = { protein: 0, carbs: 0, fat: 0 };
 
-        Object.entries(meals).forEach(([_, recipe]) => {
+        Object.entries(meals || {}).forEach(([, recipe]) => {
           if (recipe) {
             dayCalories += recipe.caloriesPerServing || recipe.calories || 0;
             if (recipe.macros) {
@@ -168,10 +169,7 @@ export const MealPlanProvider = ({ children }) => {
         });
 
         if (dayCalories > 0) {
-          summary.mealBreakdown[day] = {
-            calories: dayCalories,
-            macros: dayMacros
-          };
+          summary.mealBreakdown[day] = { calories: dayCalories, macros: dayMacros };
           summary.totalCalories += dayCalories;
           summary.totalMacros.protein += dayMacros.protein;
           summary.totalMacros.carbs += dayMacros.carbs;
@@ -185,46 +183,44 @@ export const MealPlanProvider = ({ children }) => {
         summary.averageDailyMacros = {
           protein: Math.round(summary.totalMacros.protein / totalDays),
           carbs: Math.round(summary.totalMacros.carbs / totalDays),
-          fat: Math.round(summary.totalMacros.fat / totalDays)
+          fat: Math.round(summary.totalMacros.fat / totalDays),
         };
 
+        const goal = state.mealPlanSettings || { calorieGoal: 0, macroTargets: { protein: 0, carbs: 0, fat: 0 } };
         summary.goalComparison = {
           calories: {
-            target: state.mealPlanSettings.calorieGoal,
+            target: goal.calorieGoal,
             actual: summary.averageDailyCalories,
-            percentage: Math.round((summary.averageDailyCalories / state.mealPlanSettings.calorieGoal) * 100)
+            percentage: goal.calorieGoal ? Math.round((summary.averageDailyCalories / goal.calorieGoal) * 100) : 0,
           },
           macros: {
             protein: {
-              target: state.mealPlanSettings.macroTargets.protein,
+              target: goal.macroTargets?.protein || 0,
               actual: summary.averageDailyMacros.protein,
-              percentage: Math.round((summary.averageDailyMacros.protein / state.mealPlanSettings.macroTargets.protein) * 100)
+              percentage: goal.macroTargets?.protein ? Math.round((summary.averageDailyMacros.protein / goal.macroTargets.protein) * 100) : 0,
             },
             carbs: {
-              target: state.mealPlanSettings.macroTargets.carbs,
+              target: goal.macroTargets?.carbs || 0,
               actual: summary.averageDailyMacros.carbs,
-              percentage: Math.round((summary.averageDailyMacros.carbs / state.mealPlanSettings.macroTargets.carbs) * 100)
+              percentage: goal.macroTargets?.carbs ? Math.round((summary.averageDailyMacros.carbs / goal.macroTargets.carbs) * 100) : 0,
             },
             fat: {
-              target: state.mealPlanSettings.macroTargets.fat,
+              target: goal.macroTargets?.fat || 0,
               actual: summary.averageDailyMacros.fat,
-              percentage: Math.round((summary.averageDailyMacros.fat / state.mealPlanSettings.macroTargets.fat) * 100)
-            }
-          }
+              percentage: goal.macroTargets?.fat ? Math.round((summary.averageDailyMacros.fat / goal.macroTargets.fat) * 100) : 0,
+            },
+          },
         };
       }
 
-      dispatch({
-        type: MEAL_PLAN_ACTIONS.CALCULATE_NUTRITION_SUMMARY,
-        payload: summary
-      });
-
+      dispatch({ type: MEAL_PLAN_ACTIONS.CALCULATE_NUTRITION_SUMMARY, payload: summary });
       return summary;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error calculating nutrition summary:', error);
       return {};
     }
-  }, [state.weekMenu, state.mealPlanSettings]);
+  }
 
   // Load data on mount
   useEffect(() => {
@@ -233,10 +229,10 @@ export const MealPlanProvider = ({ children }) => {
     loadMealPlanSettings();
   }, []);
 
-  // Recalculate nutrition when week menu or settings change (now AFTER definition)
+  // Recalculate AFTER definition
   useEffect(() => {
     calculateNutritionSummary();
-  }, [calculateNutritionSummary]);
+  }, [state.weekMenu, state.mealPlanSettings, calculateNutritionSummary]);
 
   // Load week menu from storage
   const loadWeekMenu = () => {
@@ -617,6 +613,8 @@ export const MealPlanProvider = ({ children }) => {
   // Context value
   const value = {
     ...state,
+    // expose the function if needed by UI
+    calculateNutritionSummary,
     loadWeekMenu,
     saveWeekMenu,
     addRecipeToMenu,
@@ -627,16 +625,12 @@ export const MealPlanProvider = ({ children }) => {
     deleteSavedMenu,
     generateShoppingList,
     updateMealPlanSettings,
-    calculateNutritionSummary,
     clearWeekMenu,
     clearError
   };
 
-  // Use the computed summary already in state
-  const nutrition = state.nutritionSummary;
-
   return (
-    <MealPlanContext.Provider value={{ ...value, nutrition }}>
+    <MealPlanContext.Provider value={value}>
       {children}
     </MealPlanContext.Provider>
   );

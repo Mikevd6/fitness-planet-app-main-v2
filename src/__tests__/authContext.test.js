@@ -1,20 +1,42 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-undef */
 const React = require('react');
 const { renderHook, act, waitFor } = require('@testing-library/react');
 
-// Mock backend auth to provide a successful login response
-jest.mock('../path/to/whatever-you-are-mocking', () => {
-  return {
-    login: jest.fn(async (email, _password) => {
-      const user = { email };
-      // Use an allowed object
-      globalThis.localStorage?.setItem('user', JSON.stringify(user));
-      return user;
-    }),
-    logout: jest.fn(() => {
+// Mock AuthContext to avoid external module dependency during tests
+jest.mock('../contexts/AuthContext', () => {
+  const React = require('react');
+  const AuthContext = React.createContext(null);
+
+  const AuthProvider = ({ children }) => {
+    const [user, setUser] = React.useState(() => {
+      const raw = globalThis.localStorage?.getItem('user');
+      return raw ? JSON.parse(raw) : null;
+    });
+
+    const login = jest.fn(async (email, _password) => {
+      const loggedInUser = { email };
+      globalThis.localStorage?.setItem('user', JSON.stringify(loggedInUser));
+      setUser(loggedInUser);
+      return loggedInUser;
+    });
+
+    const logout = jest.fn(() => {
       globalThis.localStorage?.removeItem('user');
-    }),
+      setUser(null);
+    });
+
+    const value = React.useMemo(
+      () => ({ user, isAuthenticated: !!user, login, logout }),
+      [user]
+    );
+
+    return React.createElement(AuthContext.Provider, { value }, children);
   };
+
+  const useAuth = () => React.useContext(AuthContext);
+
+  return { AuthProvider, useAuth };
 });
 
 const { AuthProvider, useAuth } = require('../contexts/AuthContext');
