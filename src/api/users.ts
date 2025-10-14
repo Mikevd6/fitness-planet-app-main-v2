@@ -1,13 +1,14 @@
 import api from './client';
 
 export type CreateUserPayload = {
+  username: string;
   email: string;
   password: string;
-  name?: string;
+  info?: string;
+  authorities?: { authority: string }[];
 };
 
 export async function createUser(payload: CreateUserPayload) {
-  // Adjust path if your API uses /users instead of /user
-  const res = await api.post('/user', payload);
+  const res = await api.post('/users', payload);
   return res.data;
 }
