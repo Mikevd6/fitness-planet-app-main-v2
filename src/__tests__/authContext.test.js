@@ -1,29 +1,21 @@
+/* eslint-disable no-undef */
 const React = require('react');
 const { renderHook, act, waitFor } = require('@testing-library/react');
 
 // Mock backend auth to provide a successful login response
-jest.mock('../services/authService', () => ({
-  __esModule: true,
-  default: {
-    login: jest.fn(async (email) => {
-      // simulate backend success
+jest.mock('../path/to/whatever-you-are-mocking', () => {
+  return {
+    login: jest.fn(async (email, _password) => {
       const user = { email };
-      // store user like fallback would, if context relies on localStorage
-      localStorage.setItem('user', JSON.stringify(user));
+      // Use an allowed object
+      globalThis.localStorage?.setItem('user', JSON.stringify(user));
       return user;
     }),
-    register: jest.fn(),
     logout: jest.fn(() => {
-      localStorage.removeItem('user');
+      globalThis.localStorage?.removeItem('user');
     }),
-    getCurrentUser: jest.fn(() => {
-      const raw = localStorage.getItem('user');
-      return raw ? JSON.parse(raw) : null;
-    }),
-    // Reflect authentication based on storing user in localStorage
-    isAuthenticated: jest.fn(() => !!localStorage.getItem('user'))
-  }
-}));
+  };
+});
 
 const { AuthProvider, useAuth } = require('../contexts/AuthContext');
 

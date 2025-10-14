@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
@@ -71,3 +70,38 @@ describe('App Component', () => {
 // };
 
 // export default App;
+
+/*
+<a
+            class="link"
+            href="/register"
+          >
+            Registreer hier
+          </a>
+        </p>
+        <p>
+          <a
+            class="link"
+            href="/password-reset"
+          >
+            Wachtwoord vergeten?
+          </a>
+        </p>
+      </div>
+      <div
+        class="demo-credentials"
+      >
+        <h3>
+          Demo Account
+        </h3>
+        <p>
+          Email: demo@fitnessplanet.com
+        </p>
+        <p>
+          Password: demo123
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+*/
