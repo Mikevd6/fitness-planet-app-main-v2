@@ -13,6 +13,12 @@ function isLikelyJwt(t?: string | null) {
   return !!t && t.split('.').length === 3 && !/^demo-token$/i.test(t);
 }
 
+const AUTH_KEYS = [
+  'fitnessplanet:7m997U9ozv6dJ9JLyWh9',
+  'novi_auth_token',
+  'token',
+];
+
 function readTokenFromStorage(): string | null {
   const keys = [
     'fitnessplanet:7m997U9ozv6dJ9JLyWh9',
@@ -38,11 +44,23 @@ function getDefaultToken(): string | null {
 }
 
 api.interceptors.request.use((config) => {
-  const token = readTokenFromStorage() || getDefaultToken();
+  const storageToken = readTokenFromStorage();
+  const fallback = getDefaultToken();
+  let token = storageToken || fallback;
+
+  // If storage has no valid JWT or contains demo-token, seed with the real JWT from .env
+  if (!isLikelyJwt(storageToken) && isLikelyJwt(fallback)) {
+    try {
+      localStorage.setItem(AUTH_KEYS[0], JSON.stringify({ accessToken: fallback! }));
+      localStorage.setItem(AUTH_KEYS[1], fallback!);
+      localStorage.setItem(AUTH_KEYS[2], fallback!);
+    } catch {}
+    token = fallback;
+  }
+
   if (isLikelyJwt(token)) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  // ensure X-Api-Key is present even if instance was created before env loaded
   if (!config.headers['X-Api-Key'] && process.env.REACT_APP_X_API_KEY) {
     config.headers['X-Api-Key'] = process.env.REACT_APP_X_API_KEY;
   }
