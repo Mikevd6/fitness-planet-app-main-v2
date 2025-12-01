@@ -114,8 +114,8 @@ export const AuthProvider = ({ children }) => {
         if (noviAuthService.isAuthenticated()) {
           const user = noviAuthService.getCurrentUser();
           const token = noviAuthService.getToken();
-          
-          if (user && token) {
+
+          if (user) {
             dispatch({
               type: AUTH_ACTIONS.RESTORE_SESSION,
               payload: { user, token }
