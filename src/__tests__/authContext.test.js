@@ -1,37 +1,11 @@
-const React = require('react');
-const { renderHook, act, waitFor } = require('@testing-library/react');
+import React from 'react';
+import { renderHook, act, waitFor } from '@testing-library/react';
+import { AuthProvider, useAuth } from '../contexts/AuthContext';
 
-// Mock backend auth to provide a successful login response
-jest.mock('../services/authService', () => ({
-  __esModule: true,
-  default: {
-    login: jest.fn(async (email) => {
-      // simulate backend success
-      const user = { email };
-      // store user like fallback would, if context relies on localStorage
-      localStorage.setItem('user', JSON.stringify(user));
-      return user;
-    }),
-    register: jest.fn(),
-    logout: jest.fn(() => {
-      localStorage.removeItem('user');
-    }),
-    getCurrentUser: jest.fn(() => {
-      const raw = localStorage.getItem('user');
-      return raw ? JSON.parse(raw) : null;
-    }),
-    // Reflect authentication based on storing user in localStorage
-    isAuthenticated: jest.fn(() => !!localStorage.getItem('user'))
-  }
-}));
-
-const { AuthProvider, useAuth } = require('../contexts/AuthContext');
-
-const wrapper = ({ children }) => React.createElement(AuthProvider, null, children);
+const wrapper = ({ children }) => <AuthProvider>{children}</AuthProvider>;
 
 describe('AuthContext login/logout flow', () => {
   beforeEach(() => {
-    // Reset storage and mocks between tests
     localStorage.clear();
     jest.clearAllMocks();
   });
@@ -40,7 +14,7 @@ describe('AuthContext login/logout flow', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     await act(async () => {
-      await result.current.login('demo@fitnessplanet.com', 'demo123');
+      await result.current.login({ email: 'demo@fitnessplanet.com', password: 'demo123' });
     });
 
     await waitFor(() => expect(result.current.isAuthenticated).toBe(true));
@@ -52,7 +26,7 @@ describe('AuthContext login/logout flow', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     await act(async () => {
-      await result.current.login('demo@fitnessplanet.com', 'demo123');
+      await result.current.login({ email: 'demo@fitnessplanet.com', password: 'demo123' });
     });
     await waitFor(() => expect(result.current.isAuthenticated).toBe(true));
 

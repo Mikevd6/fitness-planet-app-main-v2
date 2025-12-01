@@ -138,6 +138,94 @@ const MealPlanContext = createContext();
 export const MealPlanProvider = ({ children }) => {
   const [state, dispatch] = useReducer(mealPlanReducer, initialState);
 
+  // Calculate nutrition summary for current week
+  const calculateNutritionSummary = useCallback(() => {
+    try {
+      const summary = {
+        totalCalories: 0,
+        averageDailyCalories: 0,
+        totalMacros: { protein: 0, carbs: 0, fat: 0 },
+        averageDailyMacros: { protein: 0, carbs: 0, fat: 0 },
+        mealBreakdown: {},
+        goalComparison: {},
+      };
+
+      let totalDays = 0;
+
+      Object.entries(state.weekMenu).forEach(([day, meals]) => {
+        let dayCalories = 0;
+        let dayMacros = { protein: 0, carbs: 0, fat: 0 };
+
+        Object.entries(meals).forEach(([mealType, recipe]) => {
+          if (recipe) {
+            dayCalories += recipe.caloriesPerServing || recipe.calories || 0;
+            if (recipe.macros) {
+              dayMacros.protein += recipe.macros.protein || 0;
+              dayMacros.carbs += recipe.macros.carbs || 0;
+              dayMacros.fat += recipe.macros.fat || 0;
+            }
+          }
+        });
+
+        if (dayCalories > 0) {
+          summary.mealBreakdown[day] = {
+            calories: dayCalories,
+            macros: dayMacros,
+          };
+          summary.totalCalories += dayCalories;
+          summary.totalMacros.protein += dayMacros.protein;
+          summary.totalMacros.carbs += dayMacros.carbs;
+          summary.totalMacros.fat += dayMacros.fat;
+          totalDays++;
+        }
+      });
+
+      if (totalDays > 0) {
+        summary.averageDailyCalories = Math.round(summary.totalCalories / totalDays);
+        summary.averageDailyMacros = {
+          protein: Math.round(summary.totalMacros.protein / totalDays),
+          carbs: Math.round(summary.totalMacros.carbs / totalDays),
+          fat: Math.round(summary.totalMacros.fat / totalDays),
+        };
+
+        summary.goalComparison = {
+          calories: {
+            target: state.mealPlanSettings.calorieGoal,
+            actual: summary.averageDailyCalories,
+            percentage: Math.round((summary.averageDailyCalories / state.mealPlanSettings.calorieGoal) * 100),
+          },
+          macros: {
+            protein: {
+              target: state.mealPlanSettings.macroTargets.protein,
+              actual: summary.averageDailyMacros.protein,
+              percentage: Math.round((summary.averageDailyMacros.protein / state.mealPlanSettings.macroTargets.protein) * 100),
+            },
+            carbs: {
+              target: state.mealPlanSettings.macroTargets.carbs,
+              actual: summary.averageDailyMacros.carbs,
+              percentage: Math.round((summary.averageDailyMacros.carbs / state.mealPlanSettings.macroTargets.carbs) * 100),
+            },
+            fat: {
+              target: state.mealPlanSettings.macroTargets.fat,
+              actual: summary.averageDailyMacros.fat,
+              percentage: Math.round((summary.averageDailyMacros.fat / state.mealPlanSettings.macroTargets.fat) * 100),
+            },
+          },
+        };
+      }
+
+      dispatch({
+        type: MEAL_PLAN_ACTIONS.CALCULATE_NUTRITION_SUMMARY,
+        payload: summary,
+      });
+
+      return summary;
+    } catch (error) {
+      console.error('Error calculating nutrition summary:', error);
+      return {};
+    }
+  }, [state.weekMenu, state.mealPlanSettings]);
+
   // Load data on mount
   useEffect(() => {
     loadWeekMenu();
@@ -509,94 +597,6 @@ export const MealPlanProvider = ({ children }) => {
       return { success: false, error: error.message };
     }
   };
-
-  // Calculate nutrition summary for current week
-  const calculateNutritionSummary = useCallback(() => {
-    try {
-      const summary = {
-        totalCalories: 0,
-        averageDailyCalories: 0,
-        totalMacros: { protein: 0, carbs: 0, fat: 0 },
-        averageDailyMacros: { protein: 0, carbs: 0, fat: 0 },
-        mealBreakdown: {},
-        goalComparison: {}
-      };
-
-      let totalDays = 0;
-
-      Object.entries(state.weekMenu).forEach(([day, meals]) => {
-        let dayCalories = 0;
-        let dayMacros = { protein: 0, carbs: 0, fat: 0 };
-
-        Object.entries(meals).forEach(([mealType, recipe]) => {
-          if (recipe) {
-            dayCalories += recipe.caloriesPerServing || recipe.calories || 0;
-            if (recipe.macros) {
-              dayMacros.protein += recipe.macros.protein || 0;
-              dayMacros.carbs += recipe.macros.carbs || 0;
-              dayMacros.fat += recipe.macros.fat || 0;
-            }
-          }
-        });
-
-        if (dayCalories > 0) {
-          summary.mealBreakdown[day] = {
-            calories: dayCalories,
-            macros: dayMacros
-          };
-          summary.totalCalories += dayCalories;
-          summary.totalMacros.protein += dayMacros.protein;
-            summary.totalMacros.carbs += dayMacros.carbs;
-            summary.totalMacros.fat += dayMacros.fat;
-          totalDays++;
-        }
-      });
-
-      if (totalDays > 0) {
-        summary.averageDailyCalories = Math.round(summary.totalCalories / totalDays);
-        summary.averageDailyMacros = {
-          protein: Math.round(summary.totalMacros.protein / totalDays),
-          carbs: Math.round(summary.totalMacros.carbs / totalDays),
-          fat: Math.round(summary.totalMacros.fat / totalDays)
-        };
-
-        summary.goalComparison = {
-          calories: {
-            target: state.mealPlanSettings.calorieGoal,
-            actual: summary.averageDailyCalories,
-            percentage: Math.round((summary.averageDailyCalories / state.mealPlanSettings.calorieGoal) * 100)
-          },
-          macros: {
-            protein: {
-              target: state.mealPlanSettings.macroTargets.protein,
-              actual: summary.averageDailyMacros.protein,
-              percentage: Math.round((summary.averageDailyMacros.protein / state.mealPlanSettings.macroTargets.protein) * 100)
-            },
-            carbs: {
-              target: state.mealPlanSettings.macroTargets.carbs,
-              actual: summary.averageDailyMacros.carbs,
-              percentage: Math.round((summary.averageDailyMacros.carbs / state.mealPlanSettings.macroTargets.carbs) * 100)
-            },
-            fat: {
-              target: state.mealPlanSettings.macroTargets.fat,
-              actual: summary.averageDailyMacros.fat,
-              percentage: Math.round((summary.averageDailyMacros.fat / state.mealPlanSettings.macroTargets.fat) * 100)
-            }
-          }
-        };
-      }
-
-      dispatch({
-        type: MEAL_PLAN_ACTIONS.CALCULATE_NUTRITION_SUMMARY,
-        payload: summary
-      });
-
-      return summary;
-    } catch (error) {
-      console.error('Error calculating nutrition summary:', error);
-      return {};
-    }
-  }, [state.weekMenu, state.mealPlanSettings]);
 
   // Clear current week menu
   const clearWeekMenu = () => {

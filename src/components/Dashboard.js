@@ -26,6 +26,7 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard">
+      <h1 className="page-title">Dashboard</h1>
       <h1 className="welcome-message">Welkom {user.username}!</h1>
       
       <div className="dashboard-stats">

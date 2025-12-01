@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { RecipeProvider } from './contexts/RecipeContext';
@@ -12,35 +12,35 @@ import ProgressTracker from './components/ProgressTracker';
 import ProfileSettings from './components/ProfileSettings';
 import RecipeSearchPage from './components/RecipeSearchPage';
 import MealPlanPage from './components/MealPlanPage';
+import LoadingScreen from './components/LoadingScreen';
 import './styles/App.css';
 
-// Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  
+
   if (loading) {
-    return (
-      <div className="loading">
-        <div className="loading-spinner"></div>
-        <p>Fitness Planet wordt geladen...</p>
-      </div>
-    );
+    return <LoadingScreen />;
   }
-  
+
   return user ? children : <Navigate to="/login" replace />;
 };
 
-// Main App Content Component
+const protectedRoutes = [
+  { path: '/', element: <Dashboard /> },
+  { path: '/dashboard', element: <Dashboard /> },
+  { path: '/workouts', element: <WorkoutTracker /> },
+  { path: '/voeding', element: <NutritionTracker /> },
+  { path: '/recepten', element: <RecipeSearchPage /> },
+  { path: '/maaltijdplan', element: <MealPlanPage /> },
+  { path: '/voortgang', element: <ProgressTracker /> },
+  { path: '/profiel', element: <ProfileSettings /> },
+];
+
 const AppContent = () => {
   const { user, loading } = useAuth();
-  
+
   if (loading) {
-    return (
-      <div className="loading">
-        <div className="loading-spinner"></div>
-        <p>Fitness Planet wordt geladen...</p>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (
@@ -52,46 +52,13 @@ const AppContent = () => {
               <Header />
               <main className="main-content">
                 <Routes>
-                  <Route path="/" element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/dashboard" element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/workouts" element={
-                    <ProtectedRoute>
-                      <WorkoutTracker />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/voeding" element={
-                    <ProtectedRoute>
-                      <NutritionTracker />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/recepten" element={
-                    <ProtectedRoute>
-                      <RecipeSearchPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/maaltijdplan" element={
-                    <ProtectedRoute>
-                      <MealPlanPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/voortgang" element={
-                    <ProtectedRoute>
-                      <ProgressTracker />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/profiel" element={
-                    <ProtectedRoute>
-                      <ProfileSettings />
-                    </ProtectedRoute>
-                  } />
+                  {protectedRoutes.map(({ path, element }) => (
+                    <Route
+                      key={path}
+                      path={path}
+                      element={<ProtectedRoute>{element}</ProtectedRoute>}
+                    />
+                  ))}
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
               </main>
@@ -108,7 +75,6 @@ const AppContent = () => {
   );
 };
 
-// Main App Component with Providers
 function App() {
   return (
     <AuthProvider>
