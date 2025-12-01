@@ -1,4 +1,5 @@
-# Fitness Planet
+# Fitness Planet<img width="444" height="530" alt="image" src="https://github.com/user-attachments/assets/e3d7b4ab-a40d-4a7d-9709-edcd836ce880" />
+
 
 Een Nederlandstalige React-app voor het plannen van maaltijden, het volgen van workouts en het beheren van je voedingsdoelen. De applicatie combineert een overzichtelijke dashboardervaring met receptenzoekopdrachten via de Edamam API en biedt hulpmiddelen voor wekelijkse mealplanning en voortgangsrapportage.
 
