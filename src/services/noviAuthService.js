@@ -2,7 +2,7 @@ import apiClient from './api';
 
 const USER_KEY = 'user';
 const DEFAULT_NOVI_API_KEY = 'fitnessplanet:7m997U9ozv6dJ9JLyWh9';
-const isDemoBackend = () =>
+const shouldUseDemoBackend =
   process.env.NODE_ENV === 'test' || process.env.REACT_APP_USE_DEMO_BACKEND === 'true';
 
 const persistUser = (user, token = null) => {
@@ -70,7 +70,7 @@ export const noviAuthService = {
       throw new Error('Vul zowel gebruikersnaam als wachtwoord in.');
     }
 
-    if (isDemoBackend()) {
+    if (shouldUseDemoBackend) {
       const { user, token } = demoLogin(credentials);
       return { success: true, user, token };
     }
@@ -122,7 +122,7 @@ export const noviAuthService = {
       authorities: userData.authorities || [{ authority: 'USER' }]
     };
 
-    if (isDemoBackend()) {
+    if (shouldUseDemoBackend) {
       const { user } = demoLogin(payload);
       return { success: true, user };
     }
