@@ -38,7 +38,14 @@ const Login = () => {
         throw new Error('Please fill in all fields');
       }
 
-      await login(formData.email, formData.password);
+      const result = await login({
+        email: formData.email.trim(),
+        password: formData.password
+      });
+
+      if (!result?.success) {
+        setError(result?.error || 'Login failed. Please try again.');
+      }
       // Navigation will happen automatically due to auth state change
     } catch (err) {
       setError(err.message || 'Login failed. Please try again.');
