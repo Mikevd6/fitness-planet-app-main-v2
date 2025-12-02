@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useRecipe } from '../contexts/RecipeContext';
+import { useRecipes } from '../contexts/RecipeContext';
 import { useAuth } from '../contexts/AuthContext';
 import '../styles/RecipeSearch.css';
 
 const RecipeSearchPage = () => {
   const { user } = useAuth();
-  const { recipes, loading, searchRecipes } = useRecipe();
+  const { recipes, loading, searchRecipes } = useRecipes();
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     cuisineType: '',
