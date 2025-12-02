@@ -1,8 +1,11 @@
 import axios from 'axios';
 
+const DEFAULT_NOVI_API_KEY = 'fitnessplanet:7m997U9ozv6dJ9JLyWh9';
+const baseURL = process.env.REACT_APP_NOVI_API_URL || 'https://api.datavortex.nl/fitnessplanet';
+
 // Create an axios instance with the NOVI backend base URL
 const apiClient = axios.create({
-  baseURL: 'https://novi.datavortex.nl/api',
+  baseURL,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
@@ -16,6 +19,12 @@ apiClient.interceptors.request.use(
     const token = localStorage.getItem('token');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    // Add API key when available (needed for certain NOVI endpoints)
+    const apiKey = process.env.REACT_APP_NOVI_API_KEY || DEFAULT_NOVI_API_KEY;
+    if (apiKey) {
+      config.headers['X-Api-Key'] = apiKey;
     }
     return config;
   },

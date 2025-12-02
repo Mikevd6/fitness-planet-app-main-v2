@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { storage } from '../utils/localStorage';
 import { notificationService } from '../utils/notificationService';
+import { useAuth } from '../contexts/AuthContext';
 import '../styles/Auth.css';
 
 const Register = () => {
   const navigate = useNavigate();
+  const { register: registerUser } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -68,43 +69,23 @@ const Register = () => {
     setLoading(true);
     
     try {
-      // Simulatie van registratie API call
-      // In een echte applicatie zou je hier een echte API aanroepen
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Check if user already exists
-      const existingUsers = storage.getUsers() || [];
-      const userExists = existingUsers.some(user => user.email === formData.email);
-      
-      if (userExists) {
-        setErrors({
-          email: 'Dit e-mailadres is al geregistreerd'
-        });
-        setLoading(false);
-        return;
-      }
-      
-      // Create new user
-      const newUser = {
-        id: Date.now().toString(),
-        name: formData.name,
-        email: formData.email,
-        // In a real app, NEVER store plain text passwords - this is just for demo
+      const result = await registerUser({
+        username: formData.email.trim(),
+        email: formData.email.trim(),
         password: formData.password,
-        createdAt: new Date().toISOString()
-      };
-      
-      // Save user to "database"
-      storage.addUser(newUser);
-      
-      // Auto-login the user
-      storage.setUser(newUser);
-      
-      notificationService.success('Registratie succesvol', 'Je account is aangemaakt');
-      navigate('/dashboard');
+        info: formData.name
+      });
+
+      if (result?.success) {
+        notificationService.success('Registratie succesvol', 'Je account is aangemaakt. Log nu in.');
+        navigate('/login');
+      } else {
+        setErrors({ form: result?.error || 'Registratie is mislukt. Probeer het opnieuw.' });
+      }
     } catch (error) {
       console.error('Error registering:', error);
-      notificationService.error('Fout bij registreren', 
+      setErrors({ form: error.message || 'Er ging iets mis tijdens het registreren.' });
+      notificationService.error('Fout bij registreren',
         'Er is een fout opgetreden tijdens het registreren');
     } finally {
       setLoading(false);
@@ -184,10 +165,12 @@ const Register = () => {
             {loading ? 'Bezig met registreren...' : 'Registreren'}
           </button>
         </form>
-        
+
         <div className="auth-links">
           <p>Heb je al een account? <Link to="/login">Log in</Link></p>
         </div>
+
+        {errors.form && <p className="error-text form-error">{errors.form}</p>}
       </div>
     </div>
   );

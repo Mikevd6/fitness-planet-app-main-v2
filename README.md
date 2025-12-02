@@ -42,3 +42,11 @@ Een Nederlandstalige React-app voor het plannen van maaltijden, het volgen van w
 
 ## Omgevingsvariabelen
 Alle configuratie gebeurt via `.env`. De belangrijkste velden staan in `.env.example` en omvatten de Edamam-API-gegevens, app-naam, versie en feature-vlaggen. Voeg je eigen waarden toe voordat je de app draait of bouwt.
+
+## Inloggen
+Voor snelle toegang kun je het ingebouwde demoaccount gebruiken:
+
+- **Email:** `demo@fitnessplanet.com`
+- **Wachtwoord:** `demo123`
+
+De demo-inlog werkt altijd, ook zonder actieve verbinding met de NOVI-backend. Gebruik je de echte backend (met je eigen gebruikers die via het NOVI-dashboard zijn aangemaakt), log dan in met de bijbehorende e-mail en het wachtwoord van die gebruiker.
