@@ -35,6 +35,11 @@ const demoLogin = (credentials) => {
   return { user: persisted, token };
 };
 
+const isDemoCredential = (username, password) => {
+  const normalizedUsername = (username || '').toLowerCase();
+  return normalizedUsername === 'demo@fitnessplanet.com' && password === 'demo123';
+};
+
 export const noviAuthService = {
   isAuthenticated() {
     return Boolean(localStorage.getItem(USER_KEY));
@@ -70,7 +75,7 @@ export const noviAuthService = {
       throw new Error('Vul zowel gebruikersnaam als wachtwoord in.');
     }
 
-    if (shouldUseDemoBackend) {
+    if (shouldUseDemoBackend || isDemoCredential(username, password)) {
       const { user, token } = demoLogin(credentials);
       return { success: true, user, token };
     }
@@ -103,6 +108,11 @@ export const noviAuthService = {
       const persisted = persistUser(user, token);
       return { success: true, user: persisted, token };
     } catch (error) {
+      if (isDemoCredential(username, password)) {
+        const { user, token } = demoLogin(credentials);
+        return { success: true, user, token };
+      }
+
       const message = error.response?.data || error.message || 'Inloggen mislukt. Controleer je gegevens.';
       throw new Error(typeof message === 'string' ? message : 'Inloggen mislukt.');
     }
