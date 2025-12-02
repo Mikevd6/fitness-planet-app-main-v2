@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+const DEFAULT_NOVI_API_KEY = 'fitnessplanet:7m997U9ozv6dJ9JLyWh9';
 const baseURL = process.env.REACT_APP_NOVI_API_URL || 'https://api.datavortex.nl/fitnessplanet';
 
 // Create an axios instance with the NOVI backend base URL
@@ -21,7 +22,7 @@ apiClient.interceptors.request.use(
     }
 
     // Add API key when available (needed for certain NOVI endpoints)
-    const apiKey = process.env.REACT_APP_NOVI_API_KEY;
+    const apiKey = process.env.REACT_APP_NOVI_API_KEY || DEFAULT_NOVI_API_KEY;
     if (apiKey) {
       config.headers['X-Api-Key'] = apiKey;
     }

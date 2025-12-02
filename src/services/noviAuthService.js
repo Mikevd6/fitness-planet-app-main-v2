@@ -1,6 +1,7 @@
 import apiClient from './api';
 
 const USER_KEY = 'user';
+const DEFAULT_NOVI_API_KEY = 'fitnessplanet:7m997U9ozv6dJ9JLyWh9';
 const useDemoBackend = () => process.env.NODE_ENV === 'test' || process.env.REACT_APP_USE_DEMO_BACKEND === 'true';
 
 const persistUser = (user, token = null) => {
@@ -15,7 +16,7 @@ const persistUser = (user, token = null) => {
 };
 
 const getApiKeyHeader = () => {
-  const apiKey = process.env.REACT_APP_NOVI_API_KEY;
+  const apiKey = process.env.REACT_APP_NOVI_API_KEY || DEFAULT_NOVI_API_KEY;
   return apiKey ? { 'X-Api-Key': apiKey } : {};
 };
 
@@ -77,7 +78,12 @@ export const noviAuthService = {
       const response = await apiClient.post(
         '/users/authenticate',
         { username, password },
-        { headers: getApiKeyHeader() }
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            ...getApiKeyHeader()
+          }
+        }
       );
 
       const token = extractToken(response.data);
@@ -121,7 +127,12 @@ export const noviAuthService = {
     }
 
     try {
-      const response = await apiClient.post('/users', payload, { headers: getApiKeyHeader() });
+      const response = await apiClient.post('/users', payload, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...getApiKeyHeader()
+        }
+      });
       return { success: true, user: response.data };
     } catch (error) {
       const message = error.response?.data || error.message || 'Registratie mislukt.';
