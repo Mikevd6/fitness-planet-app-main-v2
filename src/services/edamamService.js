@@ -36,9 +36,16 @@ class EdamamService {
 
       const safeFrom = Math.max(0, Number(from) || 0);
       const requestedTo = Number(to);
+      const maxWindowSize = 10;
+      if (Number.isFinite(requestedTo) && requestedTo - safeFrom > maxWindowSize) {
+        console.warn(
+          `Requested range from=${safeFrom} to=${requestedTo} exceeds the maximum window size of ${maxWindowSize}. ` +
+          `Only ${maxWindowSize} results will be returned.`
+        );
+      }
       const safeTo = Math.min(
-        safeFrom + 10,
-        Number.isFinite(requestedTo) && requestedTo > safeFrom ? requestedTo : safeFrom + 10
+        safeFrom + maxWindowSize,
+        Number.isFinite(requestedTo) && requestedTo > safeFrom ? requestedTo : safeFrom + maxWindowSize
       );
 
       const params = new URLSearchParams({
