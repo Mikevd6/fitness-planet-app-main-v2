@@ -201,7 +201,8 @@
 }
 
 .login-btn:disabled {
-  background: rgba(255, 255, 255, 0.35);
+  background: #b0b8c9;
+  color: #444;
   cursor: not-allowed;
   box-shadow: none;
 }
