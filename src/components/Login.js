@@ -153,11 +153,13 @@ const Login = () => {
             </p>
           </div>
 
-          <div className="demo-credentials">
-            <h3>Demo Account</h3>
-            <p>Email: demo@fitnessplanet.com</p>
-            <p>Password: demo123</p>
-          </div>
+          {process.env.NODE_ENV !== 'production' && (
+            <div className="demo-credentials">
+              <h3>Demo Account</h3>
+              <p>Email: demo@fitnessplanet.com</p>
+              <p>Password: demo123</p>
+            </div>
+          )}
         </div>
       </main>
     </div>
