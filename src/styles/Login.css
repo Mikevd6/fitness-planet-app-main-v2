@@ -52,10 +52,6 @@
   cursor: default;
 }
 
-.nav-links span:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
-}
 
 .nav-actions {
   display: flex;
