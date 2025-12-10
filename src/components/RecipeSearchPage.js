@@ -11,10 +11,12 @@ const RecipeSearchPage = () => {
     cuisineType: '',
     mealType: '',
     diet: '',
+    health: '',
     maxCalories: '',
     maxTime: ''
   });
   const [searchResults, setSearchResults] = useState([]);
+  const [resultCount, setResultCount] = useState(0);
 
   const cuisineTypes = [
     { value: '', label: 'All Cuisines' },
@@ -44,6 +46,14 @@ const RecipeSearchPage = () => {
     { value: 'low-fat', label: 'Low Fat' }
   ];
 
+  const allergyOptions = [
+    { value: '', label: 'Geen allergieën' },
+    { value: 'gluten-free', label: 'Gluten-free' },
+    { value: 'dairy-free', label: 'Dairy-free' },
+    { value: 'soy-free', label: 'Soy-free' },
+    { value: 'peanut-free', label: 'Peanut-free' }
+  ];
+
   useEffect(() => {
     // Load initial recipes
     handleSearch();
@@ -53,21 +63,29 @@ const RecipeSearchPage = () => {
     try {
       const searchOptions = {
         query: searchTerm,
-        ...filters,
+        cuisineType: filters.cuisineType,
+        mealType: filters.mealType,
+        diet: filters.diet,
+        health: filters.health,
+        calories: filters.maxCalories ? `0-${filters.maxCalories}` : '',
+        time: filters.maxTime ? `1-${filters.maxTime}` : '',
         from: 0,
-        to: 20
+        to: 10
       };
 
       const result = await searchRecipes(searchOptions);
       if (result.success) {
         setSearchResults(result.recipes);
+        setResultCount(result.totalResults || result.recipes.length);
       } else {
         console.error('Search failed:', result.error);
         setSearchResults([]);
+        setResultCount(0);
       }
     } catch (error) {
       console.error('Search error:', error);
       setSearchResults([]);
+      setResultCount(0);
     }
   };
 
@@ -86,42 +104,52 @@ const RecipeSearchPage = () => {
   const RecipeCard = ({ recipe }) => (
     <div className="recipe-card">
       <div className="recipe-image-container">
-        <img 
-          src={recipe.image || '/images/recipes/default-recipe.jpg'} 
+        <img
+          src={recipe.image || '/images/recipes/default-recipe.jpg'}
           alt={recipe.title}
           className="recipe-image"
         />
-        <div className="recipe-overlay">
-          <button className="btn btn-small btn-primary">View Recipe</button>
-          <button className="btn btn-small btn-secondary">Add to Plan</button>
+        <div className="recipe-chip-row">
+          <span className="chip chip-outline">Favoriet</span>
+          {recipe.dietLabels?.slice(0, 1).map(label => (
+            <span key={label} className="chip chip-pill">{label}</span>
+          ))}
+          {recipe.healthLabels?.slice(0, 1).map(label => (
+            <span key={label} className="chip chip-outline">{label}</span>
+          ))}
         </div>
       </div>
-      
+
       <div className="recipe-content">
-        <h3 className="recipe-title">{recipe.title}</h3>
-        <p className="recipe-source">{recipe.source}</p>
-        
-        <div className="recipe-stats">
-          <span className="stat">
-            <strong>{recipe.caloriesPerServing || recipe.calories}</strong> cal
-          </span>
-          {recipe.prepTime && (
-            <span className="stat">
-              <strong>{recipe.prepTime}</strong> min
-            </span>
-          )}
-          <span className="stat">
-            <strong>{recipe.yield || 1}</strong> servings
-          </span>
+        <div className="recipe-header">
+          <div>
+            <h3 className="recipe-title">{recipe.title}</h3>
+            <p className="recipe-source">{recipe.source}</p>
+          </div>
+          <div className="recipe-meta">
+            <div className="meta-block">
+              <span className="meta-label">Calorieën</span>
+              <strong>{recipe.caloriesPerServing || recipe.calories}</strong>
+            </div>
+            <div className="meta-block">
+              <span className="meta-label">Bereiding</span>
+              <strong>{recipe.prepTime || 15} min</strong>
+            </div>
+            <div className="meta-block">
+              <span className="meta-label">Hits</span>
+              <strong>105</strong>
+            </div>
+          </div>
         </div>
-        
+
         <div className="recipe-tags">
-          {recipe.dietLabels?.slice(0, 2).map(label => (
-            <span key={label} className="tag diet-tag">{label}</span>
-          ))}
           {recipe.cuisineType?.slice(0, 1).map(cuisine => (
             <span key={cuisine} className="tag cuisine-tag">{cuisine}</span>
           ))}
+          {recipe.dishType?.slice(0, 1).map(dish => (
+            <span key={dish} className="tag diet-tag">{dish}</span>
+          ))}
+          <span className="tag ghost-tag">{recipe.yield || 2} personen</span>
         </div>
       </div>
     </div>
@@ -129,124 +157,167 @@ const RecipeSearchPage = () => {
 
   return (
     <div className="recipe-search-page">
-      <div className="container">
-        <div className="page-header">
-          <h1>Recipe Search</h1>
-          <p>Discover delicious recipes for your meal planning</p>
+      <div className="recipe-search-hero">
+        <div className="hero-text">
+          <p className="breadcrumb">Home &gt; Maaltijden &gt; Recepten</p>
+          <h1>Recepten zoeken</h1>
+          <p className="hero-subtitle">Vind de perfecte maaltijd voor jouw doelen en voorkeuren.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="search-form">
+        <form onSubmit={handleSubmit} className="hero-search">
           <div className="search-bar">
             <input
               type="text"
-              placeholder="Search for recipes..."
+              placeholder="Bijv. kip, quinoa, salade..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
             />
-            <button type="submit" className="btn btn-primary search-btn">
-              Search
+            <button type="submit" className="search-btn">
+              Zoeken
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div className="search-layout">
+        <aside className="filters-panel">
+          <div className="panel-header">
+            <div>
+              <p className="panel-kicker">Fitness Planet - Recepten</p>
+              <h3>Filters</h3>
+            </div>
+            <button className="chip chip-outline" type="button" onClick={() => {
+              setFilters({ cuisineType: '', mealType: '', diet: '', health: '', maxCalories: '', maxTime: '' });
+              setSearchTerm('');
+            }}>
+              Alles wissen
             </button>
           </div>
 
-          <div className="filters">
-            <div className="filter-group">
-              <label htmlFor="cuisineType">Cuisine:</label>
-              <select
-                id="cuisineType"
-                value={filters.cuisineType}
-                onChange={(e) => handleFilterChange('cuisineType', e.target.value)}
-              >
-                {cuisineTypes.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div className="filter-group">
+            <label htmlFor="cuisineType">Cuisine</label>
+            <select
+              id="cuisineType"
+              value={filters.cuisineType}
+              onChange={(e) => handleFilterChange('cuisineType', e.target.value)}
+            >
+              {cuisineTypes.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-            <div className="filter-group">
-              <label htmlFor="mealType">Meal Type:</label>
-              <select
-                id="mealType"
-                value={filters.mealType}
-                onChange={(e) => handleFilterChange('mealType', e.target.value)}
-              >
-                {mealTypes.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div className="filter-group">
+            <label htmlFor="mealType">Maaltijd</label>
+            <select
+              id="mealType"
+              value={filters.mealType}
+              onChange={(e) => handleFilterChange('mealType', e.target.value)}
+            >
+              {mealTypes.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-            <div className="filter-group">
-              <label htmlFor="diet">Diet:</label>
-              <select
-                id="diet"
-                value={filters.diet}
-                onChange={(e) => handleFilterChange('diet', e.target.value)}
-              >
-                {diets.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+          <div className="filter-group">
+            <label htmlFor="diet">Dieet</label>
+            <div className="pill-row">
+              {diets.slice(1).map(option => (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={`pill ${filters.diet === option.value ? 'pill-active' : ''}`}
+                  onClick={() => handleFilterChange('diet', filters.diet === option.value ? '' : option.value)}
+                >
+                  {option.label}
+                </button>
+              ))}
             </div>
+          </div>
 
+          <div className="filter-group">
+            <label htmlFor="health">Allergieën</label>
+            <select
+              id="health"
+              value={filters.health}
+              onChange={(e) => handleFilterChange('health', e.target.value)}
+            >
+              {allergyOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-grid">
             <div className="filter-group">
-              <label htmlFor="maxCalories">Max Calories:</label>
+              <label htmlFor="maxCalories">Max kcal</label>
               <input
                 type="number"
                 id="maxCalories"
-                placeholder="e.g., 500"
+                placeholder="450"
                 value={filters.maxCalories}
                 onChange={(e) => handleFilterChange('maxCalories', e.target.value)}
               />
             </div>
 
             <div className="filter-group">
-              <label htmlFor="maxTime">Max Cook Time (min):</label>
+              <label htmlFor="maxTime">Max tijd (min)</label>
               <input
                 type="number"
                 id="maxTime"
-                placeholder="e.g., 30"
+                placeholder="30"
                 value={filters.maxTime}
                 onChange={(e) => handleFilterChange('maxTime', e.target.value)}
               />
             </div>
           </div>
-        </form>
 
-        <div className="search-results">
-          {loading ? (
-            <div className="loading">
-              <div className="loading-spinner"></div>
-              <p>Searching recipes...</p>
+          <button className="apply-btn" onClick={handleSearch} type="button">
+            Filters toepassen
+          </button>
+        </aside>
+
+        <section className="results-panel">
+          <div className="results-header">
+            <div>
+              <p className="panel-kicker">Favorieten ></p>
+              <h2>Resultaten</h2>
             </div>
-          ) : (
-            <>
-              <div className="results-header">
-                <h2>Search Results</h2>
-                <p>{searchResults.length} recipes found</p>
+            <span className="results-count">{resultCount} gevonden</span>
+          </div>
+
+          <div className="search-results">
+            {loading ? (
+              <div className="loading">
+                <div className="loading-spinner"></div>
+                <p>Recepten zoeken...</p>
               </div>
-              
-              {searchResults.length > 0 ? (
-                <div className="recipes-grid">
-                  {searchResults.map(recipe => (
-                    <RecipeCard key={recipe.id} recipe={recipe} />
-                  ))}
-                </div>
-              ) : (
-                <div className="no-results">
-                  <h3>No recipes found</h3>
-                  <p>Try adjusting your search terms or filters</p>
-                </div>
-              )}
-            </>
-          )}
-        </div>
+            ) : (
+              <>
+                {searchResults.length > 0 ? (
+                  <div className="recipes-grid">
+                    {searchResults.map(recipe => (
+                      <RecipeCard key={recipe.id} recipe={recipe} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="no-results">
+                    <h3>Geen recepten gevonden</h3>
+                    <p>Pas je zoekterm of filters aan en probeer opnieuw.</p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </section>
       </div>
     </div>
   );

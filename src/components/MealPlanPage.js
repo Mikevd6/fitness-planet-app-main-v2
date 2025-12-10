@@ -1,233 +1,68 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useMealPlan } from '../contexts/MealPlanContext';
 import { useAuth } from '../contexts/AuthContext';
 import '../styles/MealPlan.css';
 
 const MealPlanPage = () => {
   useAuth();
-  const { weekMenu, loading, dispatch, actionTypes } = useMealPlan();
-  const [selectedDay, setSelectedDay] = useState('monday');
-  const [view, setView] = useState('week'); // 'week' or 'day'
+  const { weekMenu, loading } = useMealPlan();
 
-  const days = [
-    { key: 'monday', label: 'Maandag' },
-    { key: 'tuesday', label: 'Dinsdag' },
-    { key: 'wednesday', label: 'Woensdag' },
-    { key: 'thursday', label: 'Donderdag' },
-    { key: 'friday', label: 'Vrijdag' },
-    { key: 'saturday', label: 'Zaterdag' },
-    { key: 'sunday', label: 'Zondag' }
-  ];
-
-  const mealTypes = [
-    { key: 'breakfast', label: 'Ontbijt' },
-    { key: 'lunch', label: 'Lunch' },
-    { key: 'dinner', label: 'Avondeten' },
-    { key: 'snack', label: 'Snack' }
-  ];
-
-  const handleAddRecipe = (day, mealType) => {
-    // This would typically open a recipe selection modal
-    console.log('Adding recipe for', day, mealType);
-    
-    // For demo purposes, add a placeholder recipe
-    const demoRecipe = {
-      id: 'demo-recipe',
-      title: 'Demo recept',
-      calories: 300,
-      prepTime: 20,
-      image: '/images/recipes/default-recipe.jpg'
-    };
-
-    dispatch({
-      type: actionTypes.ADD_RECIPE_TO_DAY,
-      payload: { day, mealType, recipe: demoRecipe }
-    });
-  };
-
-  const handleRemoveRecipe = (day, mealType) => {
-    dispatch({
-      type: actionTypes.REMOVE_RECIPE_FROM_DAY,
-      payload: { day, mealType }
-    });
-  };
-
-  const calculateDayCalories = (day) => {
-    const dayMenu = weekMenu[day] || {};
-    return Object.values(dayMenu).reduce((total, recipe) => {
-      return total + (recipe?.calories || 0);
-    }, 0);
-  };
-
-  const calculateWeekCalories = () => {
-    return days.reduce((total, day) => {
-      return total + calculateDayCalories(day.key);
-    }, 0);
-  };
+  const hasMeals = Object.values(weekMenu || {}).some(
+    (day) => day && Object.keys(day).length > 0
+  );
 
   if (loading) {
     return (
-      <div className="loading">
-        <div className="loading-spinner"></div>
-        <p>Loading meal plan...</p>
+      <div className="meal-plan-page">
+        <div className="meal-plan-loading">Bezig met laden...</div>
       </div>
     );
   }
 
   return (
     <div className="meal-plan-page">
-      <div className="container">
-        <div className="page-header">
-          <h1>Maaltijdplanning</h1>
-          <p>Plan je maaltijden voor de hele week</p>
-          
-          <div className="view-controls">
-            <button 
-              className={`btn ${view === 'week' ? 'active' : ''}`}
-              onClick={() => setView('week')}
-            >
-              Weekoverzicht
-            </button>
-            <button 
-              className={`btn ${view === 'day' ? 'active' : ''}`}
-              onClick={() => setView('day')}
-            >
-              Dag detail
-            </button>
-          </div>
+      <div className="meal-plan-hero">
+        <div className="meal-plan-hero__content">
+          <p className="eyebrow">Maaltijdplan</p>
+          <h1>Maaltijdplan</h1>
+          <p className="subtitle">Beheer en plan je wekelijkse maaltijden.</p>
         </div>
+      </div>
 
-        <div className="meal-plan-stats">
-          <div className="stat-card">
-            <h3>Week Totaal</h3>
-            <span className="stat-value">{calculateWeekCalories()} cal</span>
+      <div className="meal-plan-shell">
+        {!hasMeals ? (
+          <div className="meal-plan-empty-card">
+            <span>Nog geen maaltijden gepland.</span>
           </div>
-          <div className="stat-card">
-            <h3>Geplande Maaltijden</h3>
-            <span className="stat-value">
-              {Object.values(weekMenu).reduce((count, day) => count + Object.keys(day).length, 0)}
-            </span>
-          </div>
-        </div>
+        ) : (
+          <div className="meal-plan-summary">
+            {Object.entries(weekMenu).map(([dayKey, meals]) => {
+              if (!meals || Object.keys(meals).length === 0) return null;
 
-        {view === 'week' ? (
-          <div className="week-view">
-            <div className="week-grid">
-              {days.map(day => (
-                <div key={day.key} className="day-column">
-                  <h3 className="day-header">{day.label}</h3>
-                  <div className="day-calories">
-                    {calculateDayCalories(day.key)} cal
+              return (
+                <div key={dayKey} className="meal-plan-summary__day">
+                  <div className="meal-plan-summary__day-header">
+                    <h3>{dayKey}</h3>
+                    <span>{Object.keys(meals).length} maaltijden</span>
                   </div>
-                  
-                  <div className="meals">
-                    {mealTypes.map(mealType => (
-                      <div key={mealType.key} className="meal-slot">
-                        <h4>{mealType.label}</h4>
-                        
-                        {weekMenu[day.key]?.[mealType.key] ? (
-                          <div className="recipe-card">
-                            <img 
-                              src={weekMenu[day.key][mealType.key].image || '/images/recipes/default-recipe.jpg'}
-                              alt={weekMenu[day.key][mealType.key].title}
-                              className="recipe-image"
-                            />
-                            <div className="recipe-info">
-                              <h5>{weekMenu[day.key][mealType.key].title}</h5>
-                              <p>{weekMenu[day.key][mealType.key].calories} cal</p>
-                            </div>
-                            <button 
-                              className="btn btn-small btn-danger"
-                              onClick={() => handleRemoveRecipe(day.key, mealType.key)}
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        ) : (
-                          <button 
-                            className="btn btn-outline add-recipe-btn"
-                            onClick={() => handleAddRecipe(day.key, mealType.key)}
-                          >
-                            + Add Recipe
-                          </button>
-                        )}
+
+                  <div className="meal-plan-summary__meals">
+                    {Object.values(meals).map((meal) => (
+                      <div key={meal.id || meal.title} className="meal-plan-summary__meal">
+                        <div className="meal-plan-summary__meal-info">
+                          <span className="meal-plan-summary__meal-title">{meal.title}</span>
+                          {meal.calories && (
+                            <span className="meal-plan-summary__meal-meta">{meal.calories} kcal</span>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="day-view">
-            <div className="day-selector">
-              <select 
-                value={selectedDay} 
-                onChange={(e) => setSelectedDay(e.target.value)}
-                className="day-select"
-              >
-                {days.map(day => (
-                  <option key={day.key} value={day.key}>
-                    {day.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="selected-day">
-              <h2>{days.find(d => d.key === selectedDay)?.label}</h2>
-              <p className="day-total">{calculateDayCalories(selectedDay)} calories totaal</p>
-              
-              <div className="day-meals">
-                {mealTypes.map(mealType => (
-                  <div key={mealType.key} className="meal-section">
-                    <h3>{mealType.label}</h3>
-                    
-                    {weekMenu[selectedDay]?.[mealType.key] ? (
-                      <div className="recipe-detail">
-                        <img 
-                          src={weekMenu[selectedDay][mealType.key].image || '/images/recipes/default-recipe.jpg'}
-                          alt={weekMenu[selectedDay][mealType.key].title}
-                          className="recipe-image-large"
-                        />
-                        <div className="recipe-details">
-                          <h4>{weekMenu[selectedDay][mealType.key].title}</h4>
-                          <p>Calories: {weekMenu[selectedDay][mealType.key].calories}</p>
-                          <p>Prep time: {weekMenu[selectedDay][mealType.key].prepTime || 'N/A'} minutes</p>
-                          <div className="recipe-actions">
-                            <button className="btn btn-secondary">View Recipe</button>
-                            <button 
-                              className="btn btn-danger"
-                              onClick={() => handleRemoveRecipe(selectedDay, mealType.key)}
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="empty-meal">
-                        <p>No recipe planned for {mealType.label.toLowerCase()}</p>
-                        <button 
-                          className="btn btn-primary"
-                          onClick={() => handleAddRecipe(selectedDay, mealType.key)}
-                        >
-                          Add Recipe
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+              );
+            })}
           </div>
         )}
-
-        <div className="meal-plan-actions">
-          <button className="btn btn-primary">Save Meal Plan</button>
-          <button className="btn btn-secondary">Generate Shopping List</button>
-          <button className="btn btn-outline">Clear All</button>
-        </div>
       </div>
     </div>
   );
