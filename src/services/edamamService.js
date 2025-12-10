@@ -31,16 +31,23 @@ class EdamamService {
         time = '',
         nutrients = {},
         from = 0,
-        to = 20
+        to = 10
       } = options;
+
+      const safeFrom = Math.max(0, Number(from) || 0);
+      const requestedTo = Number(to);
+      const safeTo = Math.min(
+        safeFrom + 10,
+        Number.isFinite(requestedTo) && requestedTo > safeFrom ? requestedTo : safeFrom + 10
+      );
 
       const params = new URLSearchParams({
         type: 'public',
         app_id: this.appId,
         app_key: this.appKey,
         q: query,
-        from: from.toString(),
-        to: to.toString()
+        from: safeFrom.toString(),
+        to: safeTo.toString()
       });
 
       // Add optional filters

@@ -56,83 +56,110 @@ const Login = () => {
 
   return (
     <div className="login-page">
-      <div className="login-container">
-        <div className="login-header">
-          <div className="logo">
-            <img 
-              src="/images/planet-fitness-logo.png" 
-              alt="Fitness Planet" 
-              className="logo-img"
+      <header className="login-nav">
+        <div className="nav-left">
+          <div className="nav-brand">
+            <img
+              src="/images/planet-fitness-logo.png"
+              alt="Fitness Planet"
+              className="nav-logo"
             />
-            <h1>Fitness Planet</h1>
+            <span className="brand-name">Fitness Planet</span>
           </div>
-          <p>Welkom terug! Log in om je fitness reis voort te zetten.</p>
+          <nav className="nav-links">
+            <span>Dashboard</span>
+            <span>Workouts</span>
+            <span>Voeding</span>
+            <span>Recepten</span>
+            <span>Maaltijdplan</span>
+            <span>Voortgang</span>
+            <span>Profiel</span>
+          </nav>
         </div>
+        <div className="nav-actions">
+          <Link to="/login" className="nav-btn secondary">Login</Link>
+          <Link to="/register" className="nav-btn primary">Register</Link>
+        </div>
+      </header>
 
-        <form onSubmit={handleSubmit} className="login-form">
-          <div className="form-group">
-            <label htmlFor="email">E-mailadres</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="je@email.com"
-              required
-              disabled={loading}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Wachtwoord</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Je wachtwoord"
-              required
-              disabled={loading}
-            />
-          </div>
-
-          {error && (
-            <div className="error-message">
-              {error}
+      <main className="login-main">
+        <div className="login-card">
+          <div className="card-header">
+            <div className="card-logo">
+              <img
+                src="/images/planet-fitness-logo.png"
+                alt="Fitness Planet"
+              />
+              <h1>Fitness Planet</h1>
             </div>
-          )}
+            <p>Welkom terug! Log in om je fitness reis voort te zetten.</p>
+          </div>
 
-          <button 
-            type="submit" 
-            className="btn btn-primary login-btn"
-            disabled={loading}
-          >
-            {loading ? 'Bezig met inloggen...' : 'Inloggen'}
-          </button>
-        </form>
+          <form onSubmit={handleSubmit} className="login-form">
+            <div className="form-group">
+              <label htmlFor="email">E-mailadres</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="je@email.com"
+                required
+                disabled={loading}
+              />
+            </div>
 
-        <div className="login-footer">
-          <p>
-            Nog geen account? {' '}
-            <Link to="/register" className="link">
-              Registreer hier
-            </Link>
-          </p>
-          <p>
-            <Link to="/password-reset" className="link">
-              Wachtwoord vergeten?
-            </Link>
-          </p>
+            <div className="form-group">
+              <label htmlFor="password">Wachtwoord</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Je wachtwoord"
+                required
+                disabled={loading}
+              />
+            </div>
+
+            {error && (
+              <div className="error-message">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="login-btn"
+              disabled={loading}
+            >
+              {loading ? 'Bezig met inloggen...' : 'Inloggen'}
+            </button>
+          </form>
+
+          <div className="login-footer">
+            <p>
+              Nog geen account? {' '}
+              <Link to="/register" className="link">
+                Registreer hier
+              </Link>
+            </p>
+            <p>
+              <Link to="/password-reset" className="link">
+                Wachtwoord vergeten?
+              </Link>
+            </p>
+          </div>
+
+          <div className="demo-credentials">
+            <h3>Demo Account</h3>
+            <p>Email: demo@fitnessplanet.com</p>
+            <p>Password: demo123</p>
+          </div>
         </div>
-
-        <div className="demo-credentials">
-          <h3>Demo Account</h3>
-          <p>Email: demo@fitnessplanet.com</p>
-          <p>Password: demo123</p>
-        </div>
-      </div>
+      </main>
     </div>
   );
 };
