@@ -36,10 +36,9 @@ class EdamamService {
 
       const safeFrom = Math.max(0, Number(from) || 0);
       const requestedTo = Number(to);
-      const safeTo = Math.min(
-        safeFrom + 10,
-        Number.isFinite(requestedTo) && requestedTo > safeFrom ? requestedTo : safeFrom + 10
-      );
+      const safeTo = Number.isFinite(requestedTo) && requestedTo > safeFrom
+        ? requestedTo
+        : safeFrom + 10;
 
       const params = new URLSearchParams({
         type: 'public',
