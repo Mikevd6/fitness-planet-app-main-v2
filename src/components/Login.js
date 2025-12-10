@@ -67,13 +67,13 @@ const Login = () => {
             <span className="brand-name">Fitness Planet</span>
           </div>
           <nav className="nav-links">
-            <span>Dashboard</span>
-            <span>Workouts</span>
-            <span>Voeding</span>
-            <span>Recepten</span>
-            <span>Maaltijdplan</span>
-            <span>Voortgang</span>
-            <span>Profiel</span>
+            <Link to="/dashboard">Dashboard</Link>
+            <Link to="/workouts">Workouts</Link>
+            <Link to="/voeding">Voeding</Link>
+            <Link to="/recepten">Recepten</Link>
+            <Link to="/maaltijdplan">Maaltijdplan</Link>
+            <Link to="/voortgang">Voortgang</Link>
+            <Link to="/profiel">Profiel</Link>
           </nav>
         </div>
         <div className="nav-actions">
