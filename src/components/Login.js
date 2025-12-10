@@ -67,13 +67,13 @@ const Login = () => {
             <span className="brand-name">Fitness Planet</span>
           </div>
           <nav className="nav-links">
-            <Link to="/dashboard">Dashboard</Link>
-            <Link to="/workouts">Workouts</Link>
-            <Link to="/voeding">Voeding</Link>
-            <Link to="/recepten">Recepten</Link>
-            <Link to="/maaltijdplan">Maaltijdplan</Link>
-            <Link to="/voortgang">Voortgang</Link>
-            <Link to="/profiel">Profiel</Link>
+            <span>Dashboard</span>
+            <span>Workouts</span>
+            <span>Voeding</span>
+            <span>Recepten</span>
+            <span>Maaltijdplan</span>
+            <span>Voortgang</span>
+            <span>Profiel</span>
           </nav>
         </div>
         <div className="nav-actions">
@@ -153,13 +153,11 @@ const Login = () => {
             </p>
           </div>
 
-          {process.env.NODE_ENV !== 'production' && (
-            <div className="demo-credentials">
-              <h3>Demo Account</h3>
-              <p>Email: demo@fitnessplanet.com</p>
-              <p>Password: demo123</p>
-            </div>
-          )}
+          <div className="demo-credentials">
+            <h3>Demo Account</h3>
+            <p>Email: demo@fitnessplanet.com</p>
+            <p>Password: demo123</p>
+          </div>
         </div>
       </main>
     </div>

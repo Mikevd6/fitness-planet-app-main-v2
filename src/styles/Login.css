@@ -52,6 +52,10 @@
   cursor: default;
 }
 
+.nav-links span:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
 
 .nav-actions {
   display: flex;
@@ -197,8 +201,7 @@
 }
 
 .login-btn:disabled {
-  background: #b0b8c9;
-  color: #444;
+  background: rgba(255, 255, 255, 0.35);
   cursor: not-allowed;
   box-shadow: none;
 }
