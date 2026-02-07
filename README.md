@@ -44,9 +44,17 @@ Een Nederlandstalige React-app voor het plannen van maaltijden, het volgen van w
 Alle configuratie gebeurt via `.env`. De belangrijkste velden staan in `.env.example` en omvatten de Edamam-API-gegevens, app-naam, versie en feature-vlaggen. Voeg je eigen waarden toe voordat je de app draait of bouwt.
 
 ## Inloggen
-Voor snelle toegang kun je het ingebouwde demoaccount gebruiken:
+Voor snelle toegang kun je het al voor geprogrammeerde demoaccount gebruiken:
 
 - **Email:** `demo@fitnessplanet.com`
 - **Wachtwoord:** `demo123`
 
-De demo-inlog werkt altijd, ook zonder actieve verbinding met de NOVI-backend. Gebruik je de echte backend (met je eigen gebruikers die via het NOVI-dashboard zijn aangemaakt), log dan in met de bijbehorende e-mail en het wachtwoord van die gebruiker.
+De demo login werkt via de NOVI-backend.
+
+## Recepten zoeken & filteren en favoriet(en) toevoegen
+
+Dit is mogelijk helaas werkt het via een gratis API van Edamam waardoor je maar een hit hebt per minuut en deze gebruik je al op het moment van inladen van de recepten, zodra je zou betalen voor de API dan zou je ook kunnen zoeken, filteren en verschillende favoriete recepten toevoegen. Dit heb ik niet aangeschaft omdat het voor een school project geprogrammeerd is.
+
+## Automatisch weekmenu
+
+Dit word automatisch gegeneerd, echter is dit voor het demo account ingesteld op onderhoud 2000 kcal. Helaas, werkt dit alleen per dag omdat het week menu 7 avondmaaltijden zou moeten inladen en dit is niet mogelijk met de gratis API.
