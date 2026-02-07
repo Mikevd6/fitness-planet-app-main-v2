@@ -49,7 +49,7 @@ const storage = {
   // Profile management
   getProfile: () => {
     try {
-      const profile = localStorage.getItem(STORAGE_KEYS.PROFILE);
+      const profile = localStorage.getItem(STORAGE_KEYS.PROFILE) || localStorage.getItem('userProfile');
       return profile ? JSON.parse(profile) : {
         naam: '',
         email: '',
@@ -67,7 +67,8 @@ const storage = {
           pescotarier: false,
           glutenvrij: false,
           overig: ''
-        }
+        },
+        savedRecipes: []
       };
     } catch (error) {
       console.error('Error getting profile:', error);
@@ -78,6 +79,7 @@ const storage = {
   setProfile: (profile) => {
     try {
       localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
+      localStorage.setItem('userProfile', JSON.stringify(profile));
     } catch (error) {
       console.error('Error saving profile:', error);
     }
@@ -386,15 +388,6 @@ const storage = {
     localStorage.setItem('users', JSON.stringify(users));
   },
   
-  // Profiel opslaan en ophalen
-  getProfile: () => {
-    const profile = localStorage.getItem('userProfile');
-    return profile ? JSON.parse(profile) : null;
-  },
-  
-  setProfile: (profile) => {
-    localStorage.setItem('userProfile', JSON.stringify(profile));
-  }
 };
 
 export { storage };
