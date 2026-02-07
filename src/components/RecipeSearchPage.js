@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRecipes } from '../contexts/RecipeContext';
-import { useAuth } from '../contexts/AuthContext';
+import { storage } from '../utils/localStorage';
+import { notificationService } from '../utils/notificationService';
 import '../styles/RecipeSearch.css';
 
 const RecipeSearchPage = () => {
-  const { user } = useAuth();
-  const { recipes, loading, searchRecipes } = useRecipes();
+  const { loading, searchRecipes } = useRecipes();
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     cuisineType: '',
@@ -17,6 +17,8 @@ const RecipeSearchPage = () => {
   });
   const [searchResults, setSearchResults] = useState([]);
   const [resultCount, setResultCount] = useState(0);
+  const [savedRecipes, setSavedRecipes] = useState([]);
+  const [favoriteRecipes, setFavoriteRecipes] = useState([]);
 
   const cuisineTypes = [
     { value: '', label: 'All Cuisines' },
@@ -54,12 +56,76 @@ const RecipeSearchPage = () => {
     { value: 'peanut-free', label: 'Peanut-free' }
   ];
 
+  const mergeSavedRecipes = (primaryRecipes, secondaryRecipes) => {
+    const recipeMap = new Map();
+    [...secondaryRecipes, ...primaryRecipes].forEach(recipe => {
+      if (recipe?.id && !recipeMap.has(recipe.id)) {
+        recipeMap.set(recipe.id, recipe);
+      }
+    });
+    return Array.from(recipeMap.values());
+  };
+
   useEffect(() => {
-    // Load initial recipes
-    handleSearch();
+    const profile = storage.getProfile();
+    const profileSaved = Array.isArray(profile?.savedRecipes) ? profile.savedRecipes : [];
+    const legacySaved = storage.getSavedRecipes ? storage.getSavedRecipes() : [];
+    const mergedSaved = mergeSavedRecipes(profileSaved, legacySaved);
+
+    if (mergedSaved.length !== profileSaved.length) {
+      storage.setProfile({ ...profile, savedRecipes: mergedSaved });
+    }
+
+    if (storage.setSavedRecipes) {
+      storage.setSavedRecipes(mergedSaved);
+    }
+
+    setSavedRecipes(mergedSaved);
   }, []);
 
-  const handleSearch = async () => {
+  useEffect(() => {
+    setFavoriteRecipes(storage.getFavorites());
+  }, []);
+
+  const handleSaveRecipe = (recipe) => {
+    if (!recipe?.id) {
+      notificationService.warning('Recept niet beschikbaar', 'Dit recept kan niet worden opgeslagen.');
+      return;
+    }
+
+    if (savedRecipes.some(saved => saved.id === recipe.id)) {
+      notificationService.info('Recept al opgeslagen', `${recipe.title} staat al in je profiel.`);
+      return;
+    }
+
+    const updatedSavedRecipes = [...savedRecipes, recipe];
+    const profile = storage.getProfile();
+    storage.setProfile({ ...profile, savedRecipes: updatedSavedRecipes });
+
+    if (storage.setSavedRecipes) {
+      storage.setSavedRecipes(updatedSavedRecipes);
+    }
+
+    setSavedRecipes(updatedSavedRecipes);
+    notificationService.success('Recept opgeslagen', `${recipe.title} is toegevoegd aan je profiel.`);
+  };
+
+  const handleToggleFavorite = (recipe) => {
+    if (!recipe?.id) {
+      return;
+    }
+
+    if (favoriteRecipes.some(favorite => favorite.id === recipe.id)) {
+      storage.removeFromFavorites(recipe.id);
+      setFavoriteRecipes(prev => prev.filter(favorite => favorite.id !== recipe.id));
+      return;
+    }
+
+    storage.addToFavorites(recipe);
+    setFavoriteRecipes(prev => [...prev, recipe]);
+  };
+
+  const handleSearch = useCallback(async () => {
     try {
       const searchOptions = {
         query: searchTerm,
@@ -87,7 +153,12 @@ const RecipeSearchPage = () => {
       setSearchResults([]);
       setResultCount(0);
     }
-  };
+  }, [filters, searchRecipes, searchTerm]);
+
+  useEffect(() => {
+    // Load initial recipes
+    handleSearch();
+  }, [handleSearch]);
 
   const handleFilterChange = (filterName, value) => {
     setFilters(prev => ({
@@ -101,8 +172,12 @@ const RecipeSearchPage = () => {
     handleSearch();
   };
 
-  const RecipeCard = ({ recipe }) => (
-    <div className="recipe-card">
+  const RecipeCard = ({ recipe }) => {
+    const isSaved = savedRecipes.some(saved => saved.id === recipe.id);
+    const isFavorite = favoriteRecipes.some(favorite => favorite.id === recipe.id);
+
+    return (
+      <div className="recipe-card">
       <div className="recipe-image-container">
         <img
           src={recipe.image || '/images/recipes/default-recipe.jpg'}
@@ -151,9 +226,30 @@ const RecipeSearchPage = () => {
           ))}
           <span className="tag ghost-tag">{recipe.yield || 2} personen</span>
         </div>
+
+        <div className="recipe-card-actions">
+          <button
+            type="button"
+            className={`favorite-recipe-btn ${isFavorite ? 'is-favorite' : ''}`}
+            onClick={() => handleToggleFavorite(recipe)}
+            aria-pressed={isFavorite}
+            aria-label={isFavorite ? 'Verwijder uit favorieten' : 'Voeg toe aan favorieten'}
+          >
+            <i className={isFavorite ? 'fas fa-heart' : 'far fa-heart'}></i>
+          </button>
+          <button
+            type="button"
+            className={`save-recipe-btn ${isSaved ? 'is-saved' : ''}`}
+            onClick={() => handleSaveRecipe(recipe)}
+            disabled={isSaved}
+          >
+            {isSaved ? 'Opgeslagen' : 'Opslaan in profiel'}
+          </button>
+        </div>
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div className="recipe-search-page">

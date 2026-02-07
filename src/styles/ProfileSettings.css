@@ -1,0 +1,126 @@
+.profile-settings {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+  color: #1f2937;
+}
+
+.profile-settings__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.profile-settings__eyebrow {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0 0 6px;
+}
+
+.profile-settings__card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
+}
+
+.profile-settings__card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.profile-settings__count {
+  background: #eef2ff;
+  color: #4f2cd1;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.profile-settings__empty {
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 14px;
+  color: #6b7280;
+}
+
+.profile-settings__recipes {
+  display: grid;
+  gap: 16px;
+}
+
+.saved-recipe {
+  display: grid;
+  grid-template-columns: 120px 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 16px;
+  background: #f8fafc;
+}
+
+.saved-recipe__image {
+  width: 120px;
+  height: 90px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.saved-recipe__details h3 {
+  margin: 0 0 6px;
+}
+
+.saved-recipe__details p {
+  margin: 0 0 10px;
+  color: #6b7280;
+}
+
+.saved-recipe__meta {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: #374151;
+}
+
+.saved-recipe__link {
+  display: inline-flex;
+  margin-top: 8px;
+  color: #4f2cd1;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.saved-recipe__remove {
+  border: none;
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.saved-recipe__remove:hover {
+  background: #fecaca;
+}
+
+@media (max-width: 720px) {
+  .saved-recipe {
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
+
+  .saved-recipe__image {
+    width: 100%;
+    height: 160px;
+  }
+
+  .saved-recipe__remove {
+    justify-self: flex-start;
+  }
+}
