@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { storage } from '../utils/localStorage';
 import { notificationService } from '../utils/notificationService';
+import CalorieCalculator from '../utils/calorieCalculator';
 import '../styles/WeekMenu.css';
 
 const WeekMenu = () => {
@@ -163,6 +164,16 @@ const WeekMenu = () => {
       // Haal gebruikersdoelen op
       const userGoals = storage.getGoals();
       const userProfile = storage.getProfile();
+      const dailyCalories = userGoals?.dailyCalories || 2000;
+      const goalType = userProfile?.goal || 'maintenance';
+
+      const goalConfigs = {
+        weightLoss: { calorieMultiplier: 0.9, proteinMin: 15, proteinBoost: 1.4 },
+        maintenance: { calorieMultiplier: 1, proteinMin: 10, proteinBoost: 1.1 },
+        weightGain: { calorieMultiplier: 1.1, proteinMin: 8, proteinBoost: 0.8 }
+      };
+
+      const goalConfig = goalConfigs[goalType] || goalConfigs.maintenance;
       
       // Simuleer het genereren van een weekmenu (in een echte app zou dit via AI/API gaan)
       await new Promise(resolve => setTimeout(resolve, 1500));
@@ -173,41 +184,73 @@ const WeekMenu = () => {
         // Als er niet genoeg recepten zijn, gebruik dan dummy recepten
         allRecipes = getDummyRecipes();
       }
+
+      const getMealTypeRecipes = (recipes, mealTypeKey) => (
+        recipes.filter(r => (
+          r.mealType === mealTypeKey || r.tags?.includes(mealTypeKey)
+        ))
+      );
+
+      const getCalorieTargets = (mealTypeKey) => {
+        const targets = CalorieCalculator.getMealCalorieTargets(dailyCalories, mealTypeKey);
+        return {
+          min: Math.round(targets.min * goalConfig.calorieMultiplier),
+          max: Math.round(targets.max * goalConfig.calorieMultiplier),
+          target: Math.round(targets.target * goalConfig.calorieMultiplier)
+        };
+      };
+
+      const pickBestRecipe = (recipes, targetCalories) => {
+        if (!recipes || recipes.length === 0) return null;
+
+        const scored = recipes.map(recipe => {
+          const calories = recipe.calories || 0;
+          const protein = recipe.macros?.protein || recipe.protein || 0;
+          const calorieScore = calories ? Math.abs(calories - targetCalories) : targetCalories;
+          const proteinScore = protein * goalConfig.proteinBoost;
+          return { recipe, score: calorieScore - proteinScore };
+        });
+
+        scored.sort((a, b) => a.score - b.score);
+        return scored[0].recipe;
+      };
+
+      const selectRecipeForMeal = (mealTypeKey) => {
+        const mealTargets = getCalorieTargets(mealTypeKey);
+        const mealRecipes = getMealTypeRecipes(allRecipes, mealTypeKey);
+
+        const calorieFiltered = mealRecipes.filter(recipe => {
+          const calories = recipe.calories;
+          return typeof calories === 'number'
+            && calories >= mealTargets.min
+            && calories <= mealTargets.max;
+        });
+
+        const proteinFiltered = calorieFiltered.filter(recipe => {
+          const protein = recipe.macros?.protein || recipe.protein || 0;
+          return protein >= goalConfig.proteinMin;
+        });
+
+        const candidates = proteinFiltered.length
+          ? proteinFiltered
+          : calorieFiltered.length
+            ? calorieFiltered
+            : mealRecipes.length
+              ? mealRecipes
+              : allRecipes;
+
+        return pickBestRecipe(candidates, mealTargets.target) || getRandomRecipe(allRecipes);
+      };
       
       // Genereer weekmenu op basis van doelstellingen
       const generatedMenu = {};
       weekDays.forEach(day => {
         generatedMenu[day] = {};
-        
-        // Ontbijt - focus op eiwitten voor energieke start
-        const breakfastRecipes = allRecipes.filter(r => 
-          (r.mealType === 'breakfast' || r.tags?.includes('ontbijt')) &&
-          (r.macros?.protein || r.protein || 0) > 15
-        );
-        
-        // Lunch - gebalanceerd met groenten
-        const lunchRecipes = allRecipes.filter(r => 
-          (r.mealType === 'lunch' || r.tags?.includes('lunch')) &&
-          (r.calories || 0) < 500
-        );
-        
-        // Diner - aangepast op calorie doel
-        const dinnerRecipes = allRecipes.filter(r => 
-          (r.mealType === 'dinner' || r.tags?.includes('diner')) &&
-          (r.calories || 0) <= (userGoals?.dailyCalories ? userGoals.dailyCalories / 3 : 600)
-        );
-        
-        // Snack - gezonde tussendoortjes
-        const snackRecipes = allRecipes.filter(r => 
-          (r.mealType === 'snack' || r.tags?.includes('snack')) &&
-          (r.calories || 0) < 200
-        );
-        
-        // Selecteer willekeurige recepten uit elke categorie
-        generatedMenu[day]['ontbijt'] = getRandomRecipe(breakfastRecipes) || getRandomRecipe(allRecipes);
-        generatedMenu[day]['lunch'] = getRandomRecipe(lunchRecipes) || getRandomRecipe(allRecipes);
-        generatedMenu[day]['diner'] = getRandomRecipe(dinnerRecipes) || getRandomRecipe(allRecipes);
-        generatedMenu[day]['snack'] = getRandomRecipe(snackRecipes) || getRandomRecipe(allRecipes);
+
+        generatedMenu[day]['ontbijt'] = selectRecipeForMeal('breakfast');
+        generatedMenu[day]['lunch'] = selectRecipeForMeal('lunch');
+        generatedMenu[day]['diner'] = selectRecipeForMeal('dinner');
+        generatedMenu[day]['snack'] = selectRecipeForMeal('snack');
       });
       
       setWeekMenu(generatedMenu);
