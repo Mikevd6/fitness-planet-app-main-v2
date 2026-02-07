@@ -18,6 +18,7 @@ const RecipeSearchPage = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [resultCount, setResultCount] = useState(0);
   const [savedRecipes, setSavedRecipes] = useState([]);
+  const [favoriteRecipes, setFavoriteRecipes] = useState([]);
 
   const cuisineTypes = [
     { value: '', label: 'All Cuisines' },
@@ -66,11 +67,6 @@ const RecipeSearchPage = () => {
   };
 
   useEffect(() => {
-    // Load initial recipes
-    handleSearch();
-  }, [handleSearch]);
-
-  useEffect(() => {
     const profile = storage.getProfile();
     const profileSaved = Array.isArray(profile?.savedRecipes) ? profile.savedRecipes : [];
     const legacySaved = storage.getSavedRecipes ? storage.getSavedRecipes() : [];
@@ -85,6 +81,10 @@ const RecipeSearchPage = () => {
     }
 
     setSavedRecipes(mergedSaved);
+  }, []);
+
+  useEffect(() => {
+    setFavoriteRecipes(storage.getFavorites());
   }, []);
 
   const handleSaveRecipe = (recipe) => {
@@ -108,6 +108,21 @@ const RecipeSearchPage = () => {
 
     setSavedRecipes(updatedSavedRecipes);
     notificationService.success('Recept opgeslagen', `${recipe.title} is toegevoegd aan je profiel.`);
+  };
+
+  const handleToggleFavorite = (recipe) => {
+    if (!recipe?.id) {
+      return;
+    }
+
+    if (favoriteRecipes.some(favorite => favorite.id === recipe.id)) {
+      storage.removeFromFavorites(recipe.id);
+      setFavoriteRecipes(prev => prev.filter(favorite => favorite.id !== recipe.id));
+      return;
+    }
+
+    storage.addToFavorites(recipe);
+    setFavoriteRecipes(prev => [...prev, recipe]);
   };
 
   const handleSearch = useCallback(async () => {
@@ -140,6 +155,11 @@ const RecipeSearchPage = () => {
     }
   }, [filters, searchRecipes, searchTerm]);
 
+  useEffect(() => {
+    // Load initial recipes
+    handleSearch();
+  }, [handleSearch]);
+
   const handleFilterChange = (filterName, value) => {
     setFilters(prev => ({
       ...prev,
@@ -154,6 +174,7 @@ const RecipeSearchPage = () => {
 
   const RecipeCard = ({ recipe }) => {
     const isSaved = savedRecipes.some(saved => saved.id === recipe.id);
+    const isFavorite = favoriteRecipes.some(favorite => favorite.id === recipe.id);
 
     return (
       <div className="recipe-card">
@@ -207,6 +228,15 @@ const RecipeSearchPage = () => {
         </div>
 
         <div className="recipe-card-actions">
+          <button
+            type="button"
+            className={`favorite-recipe-btn ${isFavorite ? 'is-favorite' : ''}`}
+            onClick={() => handleToggleFavorite(recipe)}
+            aria-pressed={isFavorite}
+            aria-label={isFavorite ? 'Verwijder uit favorieten' : 'Voeg toe aan favorieten'}
+          >
+            <i className={isFavorite ? 'fas fa-heart' : 'far fa-heart'}></i>
+          </button>
           <button
             type="button"
             className={`save-recipe-btn ${isSaved ? 'is-saved' : ''}`}
