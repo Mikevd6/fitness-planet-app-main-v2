@@ -7,7 +7,7 @@ Een Nederlandstalige React-app voor het plannen van maaltijden, het volgen van w
 - **Authenticatie en sessiebeheer:** Inloggen, registreren en uitloggen via de `AuthContext`, inclusief sessieherstel op basis van opgeslagen tokens.
 - **Dashboardoverzicht:** Snelle inzage in dagelijkse calorieën, workouts, waterinname en slaapgegevens, plus welkomstbericht op basis van de aangemelde gebruiker.
 - **Workout- en voedingstrackers:** Pagina's voor het plannen van trainingen en het bijhouden van voedingsinname, volledig in het Nederlands.
-- **Recepten en maaltijdplanning:** Zoek recepten via de Edamam API, beheer favorieten en plan gerechten per dag en maaltijdtype met calorie-totalen per dag en week.
+- **Recepten en maaltijdplanning:** Zoek recepten via de Edamam API, beheer favorieten en plan gerechten per dag en maaltijdtype met calorie totalen per dag en week.
 - **Progressie en profiel:** Bekijk voortgangspagina's en beheer persoonlijke instellingen zoals wachtwoordwijzigingen en notificatievoorkeuren.
 
 ## Installatie
