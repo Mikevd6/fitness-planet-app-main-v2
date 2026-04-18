@@ -1,8 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { Provider } from 'react-redux';
-import { store } from '../redux/store';
+import { NotificationProvider } from '../contexts/NotificationContext';
 import App from '../App';
 
 // Mock the localStorage
@@ -25,24 +24,24 @@ describe('App Component', () => {
     mockLocalStorage.clear();
     jest.clearAllMocks();
   });
-  
+
   test('renders login when user is not logged in', () => {
     render(
-      <Provider store={store}>
+      <NotificationProvider>
         <App />
-      </Provider>
+      </NotificationProvider>
     );
     expect(screen.getByText(/log in/i)).toBeInTheDocument();
   });
-  
+
   test('renders dashboard when user is logged in', () => {
     // Set the user in localStorage before rendering
     mockLocalStorage.getItem.mockReturnValue(JSON.stringify({ name: 'Test User' }));
-    
+
     render(
-      <Provider store={store}>
+      <NotificationProvider>
         <App />
-      </Provider>
+      </NotificationProvider>
     );
     expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
   });
