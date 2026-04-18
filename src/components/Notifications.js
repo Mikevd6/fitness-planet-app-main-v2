@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { markAsRead, clearNotification } from '../redux/notificationSlice';
+import { useNotifications, markAsRead, clearNotification } from '../contexts/NotificationContext';
 import '../styles/Notifications.css';
 
 const Notifications = () => {
-  const dispatch = useDispatch();
-  const notifications = useSelector(state => state.notifications.items) || [];
+  const { state, dispatch } = useNotifications();
+  const notifications = state.notifications?.items || state.items || [];
   const [showAll, setShowAll] = useState(false);
 
   // Make sure notifications is always an array
   const notificationItems = Array.isArray(notifications) ? notifications : [];
-  
+
   // Get unread notifications count
   const unreadCount = notificationItems.filter(notification => !notification.read).length;
 
@@ -31,8 +30,8 @@ const Notifications = () => {
   };
 
   // Filter notifications based on showAll toggle
-  const displayedNotifications = showAll 
-    ? notificationItems 
+  const displayedNotifications = showAll
+    ? notificationItems
     : notificationItems.filter(notification => !notification.read);
 
   return (
@@ -41,14 +40,14 @@ const Notifications = () => {
         <h3>Notifications {unreadCount > 0 && <span className="badge">{unreadCount}</span>}</h3>
         <div className="notifications-actions">
           {unreadCount > 0 && (
-            <button 
+            <button
               className="notifications-action-btn"
               onClick={handleMarkAllAsRead}
             >
               Mark all as read
             </button>
           )}
-          <button 
+          <button
             className="notifications-toggle-btn"
             onClick={() => setShowAll(!showAll)}
           >
@@ -56,7 +55,7 @@ const Notifications = () => {
           </button>
         </div>
       </div>
-      
+
       <div className="notifications-list">
         {displayedNotifications.length === 0 ? (
           <div className="notification-empty">
@@ -64,8 +63,8 @@ const Notifications = () => {
           </div>
         ) : (
           displayedNotifications.map(notification => (
-            <div 
-              key={notification.id} 
+            <div
+              key={notification.id}
               className={`notification-item ${!notification.read ? 'unread' : ''}`}
             >
               <div className="notification-icon">
@@ -80,14 +79,14 @@ const Notifications = () => {
               </div>
               <div className="notification-actions">
                 {!notification.read && (
-                  <button 
+                  <button
                     className="notification-btn"
                     onClick={() => handleMarkAsRead(notification.id)}
                   >
                     <i className="fas fa-check"></i>
                   </button>
                 )}
-                <button 
+                <button
                   className="notification-btn"
                   onClick={() => handleClear(notification.id)}
                 >

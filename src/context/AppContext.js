@@ -1,5 +1,5 @@
 /**
- * Application Context - Centrale state management zonder Redux
+ * Application Context - Centrale state management met React Context
  * Maakt het delen van state tussen componenten eenvoudiger
  */
 
