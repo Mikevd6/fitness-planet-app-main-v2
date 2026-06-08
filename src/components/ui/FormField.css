@@ -1,0 +1,33 @@
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.form-field label {
+  color: var(--color-heading);
+  font-weight: 700;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface-soft);
+  color: var(--color-heading);
+}
+
+.form-field textarea {
+  resize: vertical;
+}
+
+.form-field input.error,
+.form-field select.error,
+.form-field textarea.error {
+  border-color: var(--color-error);
+  background: var(--color-error-soft);
+}
