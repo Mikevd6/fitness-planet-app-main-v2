@@ -6,7 +6,7 @@ import PageHeader from './ui/PageHeader';
 import WorkoutList from './workouts/WorkoutList';
 import WorkoutPlanForm from './workouts/WorkoutPlanForm';
 import WorkoutStatsGrid from './workouts/WorkoutStatsGrid';
-import '../styles/WorkoutTracker.css';
+import './WorkoutTracker.css';
 
 const workoutStats = [
   { label: 'Sessions', value: '3/5', detail: 'Deze week' },
