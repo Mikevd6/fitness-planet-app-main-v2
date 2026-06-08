@@ -1,106 +1,176 @@
+const DEFAULT_RECIPE_QUERY = 'healthy';
+
 class EdamamService {
   constructor() {
     this.baseUrl = import.meta.env.VITE_EDAMAM_BASE_URL || 'https://api.edamam.com';
     this.appId = import.meta.env.VITE_EDAMAM_APP_ID;
     this.appKey = import.meta.env.VITE_EDAMAM_APP_KEY;
     this.recipeSearchUrl = `${this.baseUrl}/api/recipes/v2`;
-    this.nutritionUrl = `${this.baseUrl}/api/nutrition-data/v2/nutrients`;
   }
 
   validateCredentials() {
     if (!this.appId || !this.appKey) {
-      throw new Error('Edamam API credentials are missing. Add VITE_EDAMAM_APP_ID and VITE_EDAMAM_APP_KEY.');
+      throw new Error('Edamam API gegevens ontbreken. Vul VITE_EDAMAM_APP_ID en VITE_EDAMAM_APP_KEY in je .env-bestand in.');
     }
   }
 
-  async searchRecipes(options = {}) {
-    try {
-      this.validateCredentials();
+  appendIfPresent(params, key, value) {
+    if (!value) return;
 
-      const {
-        query = '',
-        cuisineType = '',
-        mealType = '',
-        dishType = '',
-        diet = '',
-        health = '',
-        calories = '',
-        time = '',
-        nutrients = {},
-        from = 0,
-        to = 10
-      } = options;
+    if (Array.isArray(value)) {
+      value.filter(Boolean).forEach((item) => params.append(key, item));
+      return;
+    }
 
-      const safeFrom = Math.max(0, Number(from) || 0);
-      const requestedTo = Number(to);
-      const safeTo = Number.isFinite(requestedTo) && requestedTo > safeFrom
-        ? requestedTo
-        : safeFrom + 10;
+    params.append(key, value);
+  }
 
-      const params = new URLSearchParams({
-        type: 'public',
-        app_id: this.appId,
-        app_key: this.appKey,
-        q: query,
-        from: safeFrom.toString(),
-        to: safeTo.toString()
-      });
+  createRecipeSearchUrl(options = {}) {
+    this.validateCredentials();
 
-      if (cuisineType) params.append('cuisineType', cuisineType);
-      if (mealType) params.append('mealType', mealType);
-      if (dishType) params.append('dishType', dishType);
-      if (diet) params.append('diet', diet);
-      if (health) params.append('health', health);
-      if (calories) params.append('calories', calories);
-      if (time) params.append('time', time);
+    const {
+      query = DEFAULT_RECIPE_QUERY,
+      cuisineType = '',
+      mealType = '',
+      dishType = '',
+      diet = '',
+      health = '',
+      calories = '',
+      time = '',
+      nutrients = {}
+    } = options;
 
-      Object.entries(nutrients).forEach(([key, value]) => {
-        if (value) params.append(key, value);
-      });
+    const params = new URLSearchParams({
+      type: 'public',
+      app_id: this.appId,
+      app_key: this.appKey
+    });
 
-      const response = await fetch(`${this.recipeSearchUrl}?${params.toString()}`);
+    if (query.trim()) {
+      params.append('q', query.trim());
+    }
 
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    this.appendIfPresent(params, 'cuisineType', cuisineType);
+    this.appendIfPresent(params, 'mealType', mealType);
+    this.appendIfPresent(params, 'dishType', dishType);
+    this.appendIfPresent(params, 'diet', diet);
+    this.appendIfPresent(params, 'health', health);
+    this.appendIfPresent(params, 'calories', calories);
+    this.appendIfPresent(params, 'time', time);
+
+    Object.entries(nutrients).forEach(([key, value]) => {
+      this.appendIfPresent(params, key, value);
+    });
+
+    return `${this.recipeSearchUrl}?${params.toString()}`;
+  }
+
+  addCredentialsToUrl(url) {
+    this.validateCredentials();
+
+    const requestUrl = new URL(url);
+    if (!requestUrl.searchParams.has('app_id')) {
+      requestUrl.searchParams.set('app_id', this.appId);
+    }
+    if (!requestUrl.searchParams.has('app_key')) {
+      requestUrl.searchParams.set('app_key', this.appKey);
+    }
+
+    return requestUrl.toString();
+  }
+
+  async requestJson(url) {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      let message = 'De Edamam API kon geen recepten ophalen.';
+
+      if (response.status === 401 || response.status === 403) {
+        message = 'De Edamam API-sleutels zijn ongeldig of horen niet bij dit Recipe Search plan.';
+      } else if (response.status === 429) {
+        message = 'De Edamam API-limiet is bereikt. Wacht even en probeer opnieuw.';
+      } else if (response.status >= 500) {
+        message = 'Edamam is tijdelijk niet bereikbaar. Probeer het later opnieuw.';
       }
 
-      const data = await response.json();
+      throw new Error(message);
+    }
 
-      return {
-        success: true,
-        recipes: this.transformRecipes(data.hits || []),
-        totalResults: data.count || 0,
-        from: data.from || 0,
-        to: data.to || 0
-      };
+    return response.json();
+  }
+
+  async requestRecipes(options) {
+    try {
+      const url = this.createRecipeSearchUrl(options);
+      const data = await this.requestJson(url);
+
+      return this.createRecipeResult(data);
     } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        recipes: []
-      };
+      return this.createErrorResult(error);
     }
   }
 
-  async getRecipeByUri(uri) {
+  async searchRecipes(queryOrOptions = DEFAULT_RECIPE_QUERY, filters = {}) {
+    const options = typeof queryOrOptions === 'object'
+      ? queryOrOptions
+      : { query: queryOrOptions, ...filters };
+
+    return this.requestRecipes(options);
+  }
+
+  async getRecipesByDiet(diet) {
+    return this.requestRecipes({
+      query: DEFAULT_RECIPE_QUERY,
+      diet
+    });
+  }
+
+  async getRecipesByMealType(mealType) {
+    return this.requestRecipes({
+      query: DEFAULT_RECIPE_QUERY,
+      mealType
+    });
+  }
+
+  async getRecipesByHealthLabel(healthLabel) {
+    return this.requestRecipes({
+      query: DEFAULT_RECIPE_QUERY,
+      health: healthLabel
+    });
+  }
+
+  async getHighProteinRecipes() {
+    return this.requestRecipes({
+      query: 'chicken',
+      diet: 'high-protein'
+    });
+  }
+
+  async getLowCalorieRecipes() {
+    return this.requestRecipes({
+      query: 'salad',
+      calories: 'lte 450'
+    });
+  }
+
+  async getRecipeDetails(recipeUrlOrUri) {
     try {
       this.validateCredentials();
 
-      const params = new URLSearchParams({
-        type: 'public',
-        app_id: this.appId,
-        app_key: this.appKey,
-        uri
-      });
+      let requestUrl = recipeUrlOrUri;
 
-      const response = await fetch(`${this.baseUrl}/api/recipes/v2/by-uri?${params.toString()}`);
-
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      if (!/^https?:\/\//.test(recipeUrlOrUri)) {
+        const params = new URLSearchParams({
+          type: 'public',
+          app_id: this.appId,
+          app_key: this.appKey,
+          uri: recipeUrlOrUri
+        });
+        requestUrl = `${this.recipeSearchUrl}/by-uri?${params.toString()}`;
       }
 
-      const data = await response.json();
-      const recipes = this.transformRecipes(data.hits || []);
+      const data = await this.requestJson(this.addCredentialsToUrl(requestUrl));
+      const recipes = this.transformRecipes(data.hits || [data].filter((item) => item.recipe));
 
       return {
         success: true,
@@ -115,40 +185,77 @@ class EdamamService {
     }
   }
 
-  async getNutritionAnalysis(ingredients) {
+  async getNextRecipesPage(nextUrl) {
     try {
-      this.validateCredentials();
-
-      const params = new URLSearchParams({
-        app_id: this.appId,
-        app_key: this.appKey
-      });
-
-      const response = await fetch(`${this.nutritionUrl}?${params.toString()}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ ingr: ingredients })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Nutrition API request failed: ${response.status} ${response.statusText}`);
+      if (!nextUrl) {
+        throw new Error('Er is geen volgende pagina met recepten beschikbaar.');
       }
 
-      const data = await response.json();
+      const data = await this.requestJson(this.addCredentialsToUrl(nextUrl));
 
-      return {
-        success: true,
-        nutrition: this.transformNutritionData(data)
-      };
+      return this.createRecipeResult(data);
     } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        nutrition: null
-      };
+      return this.createErrorResult(error);
     }
+  }
+
+  async getPersonalizedRecipes(userProfile) {
+    const {
+      dietPreferences = [],
+      healthRestrictions = [],
+      calorieGoal = null,
+      mealType = '',
+      cuisinePreferences = []
+    } = userProfile;
+
+    return this.requestRecipes({
+      query: cuisinePreferences[0] || DEFAULT_RECIPE_QUERY,
+      mealType,
+      diet: dietPreferences[0] || '',
+      health: healthRestrictions,
+      calories: calorieGoal ? `lte ${calorieGoal}` : ''
+    });
+  }
+
+  async getAlternativeRecipes(originalRecipe, count = 3) {
+    const result = await this.requestRecipes({
+      query: originalRecipe.cuisineType?.[0] || originalRecipe.title?.split(' ')[0] || DEFAULT_RECIPE_QUERY,
+      mealType: originalRecipe.mealType?.[0] || '',
+      diet: originalRecipe.dietLabels?.[0] || '',
+      calories: originalRecipe.caloriesPerServing
+        ? `${Math.max(0, originalRecipe.caloriesPerServing - 100)}-${originalRecipe.caloriesPerServing + 100}`
+        : ''
+    });
+
+    if (!result.success) {
+      return result;
+    }
+
+    return {
+      ...result,
+      recipes: result.recipes
+        .filter((recipe) => recipe.id !== originalRecipe.id)
+        .slice(0, count)
+    };
+  }
+
+  createRecipeResult(data) {
+    return {
+      success: true,
+      recipes: this.transformRecipes(data.hits || []),
+      totalResults: data.count || 0,
+      nextPageUrl: data._links?.next?.href || ''
+    };
+  }
+
+  createErrorResult(error) {
+    return {
+      success: false,
+      error: error.message,
+      recipes: [],
+      totalResults: 0,
+      nextPageUrl: ''
+    };
   }
 
   transformRecipes(hits) {
@@ -159,6 +266,7 @@ class EdamamService {
       return {
         id: this.generateRecipeId(recipe.uri),
         uri: recipe.uri,
+        detailsUrl: hit._links?.self?.href || '',
         title: recipe.label,
         description: recipe.source || 'Edamam Recipe',
         image: recipe.image,
@@ -170,7 +278,6 @@ class EdamamService {
         calories: Math.round(recipe.calories) || 0,
         caloriesPerServing: Math.round(recipe.calories / servings) || 0,
         ingredients: recipe.ingredientLines || [],
-        instructions: recipe.instructions || [],
         cuisineType: recipe.cuisineType || [],
         mealType: recipe.mealType || [],
         dishType: recipe.dishType || [],
@@ -195,18 +302,6 @@ class EdamamService {
     });
   }
 
-  transformNutritionData(data) {
-    return {
-      calories: Math.round(data.calories || 0),
-      totalWeight: Math.round(data.totalWeight || 0),
-      dietLabels: data.dietLabels || [],
-      healthLabels: data.healthLabels || [],
-      cautions: data.cautions || [],
-      totalNutrients: data.totalNutrients || {},
-      totalDaily: data.totalDaily || {}
-    };
-  }
-
   transformNutrients(totalNutrients, servings = 1) {
     if (!totalNutrients) return {};
 
@@ -220,83 +315,8 @@ class EdamamService {
     }), {});
   }
 
-  generateRecipeId(uri) {
-    return uri.split('/').pop().split('?')[0];
-  }
-
-  async getPersonalizedRecipes(userProfile) {
-    const {
-      dietPreferences = [],
-      healthRestrictions = [],
-      calorieGoal = null,
-      mealType = '',
-      cuisinePreferences = []
-    } = userProfile;
-
-    return this.searchRecipes({
-      query: cuisinePreferences[0] || 'healthy',
-      mealType,
-      diet: dietPreferences[0] || '',
-      health: healthRestrictions.length > 0 ? healthRestrictions.join(',') : '',
-      calories: calorieGoal ? `0-${calorieGoal}` : '',
-      from: 0,
-      to: 12
-    });
-  }
-
-  async getAlternativeRecipes(originalRecipe, count = 3) {
-    const result = await this.searchRecipes({
-      query: originalRecipe.cuisineType?.[0] || originalRecipe.title.split(' ')[0],
-      mealType: originalRecipe.mealType?.[0] || '',
-      diet: originalRecipe.dietLabels?.[0] || '',
-      calories: `${Math.max(0, originalRecipe.caloriesPerServing - 100)}-${originalRecipe.caloriesPerServing + 100}`,
-      from: 0,
-      to: count + 5
-    });
-
-    if (!result.success) {
-      return result;
-    }
-
-    return {
-      success: true,
-      recipes: result.recipes
-        .filter((recipe) => recipe.id !== originalRecipe.id)
-        .slice(0, count)
-    };
-  }
-
-  getFilterOptions() {
-    return {
-      cuisineTypes: [
-        'american', 'asian', 'british', 'caribbean', 'central europe',
-        'chinese', 'eastern europe', 'french', 'indian', 'italian',
-        'japanese', 'kosher', 'mediterranean', 'mexican', 'middle eastern',
-        'nordic', 'south american', 'south east asian'
-      ],
-      mealTypes: ['breakfast', 'lunch', 'dinner', 'snack', 'teatime'],
-      dishTypes: [
-        'alcohol-cocktail', 'biscuits and cookies', 'bread', 'cereals',
-        'condiments and sauces', 'desserts', 'drinks', 'egg', 'fats and oils',
-        'fish', 'frozen desserts', 'fruit', 'grain', 'ice cream and custard',
-        'main course', 'meat', 'milk', 'pancake', 'pasta', 'pastry',
-        'pies and tarts', 'pizza', 'pork', 'poultry', 'preserve',
-        'salad', 'sandwiches', 'seafood', 'side dish', 'soup',
-        'special occasions', 'starter', 'sweets', 'vegetables', 'vegetarian'
-      ],
-      diets: [
-        'balanced', 'high-fiber', 'high-protein', 'low-carb', 'low-fat', 'low-sodium'
-      ],
-      healthLabels: [
-        'alcohol-free', 'celery-free', 'crustacean-free', 'dairy-free',
-        'egg-free', 'fish-free', 'fodmap-free', 'gluten-free', 'immuno-supportive',
-        'keto-friendly', 'kidney-friendly', 'kosher', 'low-potassium',
-        'lupine-free', 'Mediterranean', 'mollusk-free', 'mustard-free',
-        'no-oil-added', 'paleo', 'peanut-free', 'pescatarian', 'pork-free',
-        'red-meat-free', 'sesame-free', 'shellfish-free', 'soy-free',
-        'sugar-conscious', 'tree-nut-free', 'vegan', 'vegetarian', 'wheat-free'
-      ]
-    };
+  generateRecipeId(uri = '') {
+    return uri.split('#').pop().split('/').pop().split('?')[0];
   }
 }
 
