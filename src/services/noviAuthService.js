@@ -1,9 +1,9 @@
 import apiClient from './api';
 
 const USER_KEY = 'user';
-const DEFAULT_NOVI_API_KEY = 'fitnessplanet:7m997U9ozv6dJ9JLyWh9';
-const shouldUseDemoBackend =
-  process.env.NODE_ENV === 'test' || process.env.REACT_APP_USE_DEMO_BACKEND === 'true';
+const env = import.meta.env;
+const shouldUseDemoBackend = env.MODE === 'test' || env.VITE_USE_DEMO_BACKEND === 'true';
+const noviApiKey = env.VITE_NOVI_API_KEY;
 
 const persistUser = (user, token = null) => {
   const data = { ...user, token };
@@ -16,10 +16,7 @@ const persistUser = (user, token = null) => {
   return data;
 };
 
-const getApiKeyHeader = () => {
-  const apiKey = process.env.REACT_APP_NOVI_API_KEY || DEFAULT_NOVI_API_KEY;
-  return apiKey ? { 'X-Api-Key': apiKey } : {};
-};
+const getApiKeyHeader = () => (noviApiKey ? { 'X-Api-Key': noviApiKey } : {});
 
 const extractToken = (data) => {
   if (!data) return null;
@@ -32,6 +29,7 @@ const demoLogin = (credentials) => {
   const user = { username: email, email, name: credentials?.name || email };
   const token = 'demo-token';
   const persisted = persistUser(user, token);
+
   return { user: persisted, token };
 };
 
@@ -58,12 +56,13 @@ export const noviAuthService = {
   async fetchUserProfile(username, token) {
     if (!username) return null;
 
-    const headers = {
-      ...getApiKeyHeader(),
-      Authorization: `Bearer ${token}`
-    };
+    const response = await apiClient.get(`/users/${username}`, {
+      headers: {
+        ...getApiKeyHeader(),
+        Authorization: `Bearer ${token}`
+      }
+    });
 
-    const response = await apiClient.get(`/users/${username}`, { headers });
     return response.data;
   },
 
@@ -101,8 +100,8 @@ export const noviAuthService = {
       try {
         const profile = await this.fetchUserProfile(username, token);
         user = { ...profile, username: profile?.username || username };
-      } catch (profileError) {
-        console.warn('Kon gebruikersprofiel niet ophalen, gebruik fallback.', profileError);
+      } catch {
+        user = { username };
       }
 
       const persisted = persistUser(user, token);
@@ -120,6 +119,7 @@ export const noviAuthService = {
 
   async register(userData) {
     const username = userData?.username || userData?.email;
+
     if (!username || !userData?.password || !userData?.email) {
       throw new Error('Gebruikersnaam, e-mailadres en wachtwoord zijn verplicht.');
     }
@@ -144,6 +144,7 @@ export const noviAuthService = {
           ...getApiKeyHeader()
         }
       });
+
       return { success: true, user: response.data };
     } catch (error) {
       const message = error.response?.data || error.message || 'Registratie mislukt.';
