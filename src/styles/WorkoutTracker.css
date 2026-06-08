@@ -70,6 +70,14 @@
   box-shadow: none;
 }
 
+.button-link {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
 .workout-grid {
   max-width: 1200px;
   margin: 0 auto;
