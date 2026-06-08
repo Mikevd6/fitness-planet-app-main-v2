@@ -1,0 +1,93 @@
+.workout-page {
+  min-height: calc(100vh - 80px);
+  width: 100%;
+  padding: 32px var(--space-page) 48px;
+  overflow-x: hidden;
+  background: var(--color-background-gradient);
+  color: var(--color-white);
+}
+
+.workout-grid {
+  width: min(100%, 1200px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  gap: 18px;
+}
+
+.stats-panel,
+.chart-panel {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-white);
+  backdrop-filter: blur(10px);
+}
+
+.stats-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chart-panel {
+  grid-column: 2;
+}
+
+.chart-body {
+  position: relative;
+  overflow: hidden;
+  padding: 18px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.chart-lines {
+  position: absolute;
+  inset: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.chart-line {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.chart-line.mid {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.chart-area {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  align-items: end;
+  gap: 8px;
+  min-height: 160px;
+}
+
+.chart-point {
+  border-radius: 10px 10px 4px 4px;
+  background: linear-gradient(180deg, rgba(0, 225, 255, 0.8), rgba(65, 105, 255, 0.4));
+}
+
+@media (max-width: 1024px) {
+  .workout-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-panel {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .workout-page {
+    padding: 24px 12px 36px;
+  }
+
+  .chart-area {
+    gap: 6px;
+  }
+}
