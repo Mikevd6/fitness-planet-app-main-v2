@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRecipes } from '../contexts/RecipeContext';
 import { storage } from '../utils/localStorage';
 import { notificationService } from '../utils/notificationService';
@@ -16,8 +16,8 @@ const initialFilters = {
 
 const cuisineTypes = ['', 'american', 'italian', 'chinese', 'mexican', 'indian', 'french', 'mediterranean'];
 const mealTypes = ['', 'breakfast', 'lunch', 'dinner', 'snack'];
-const diets = ['vegetarian', 'vegan', 'low-carb', 'high-protein', 'low-fat'];
-const allergies = ['', 'gluten-free', 'dairy-free', 'soy-free', 'peanut-free'];
+const diets = ['', 'balanced', 'high-protein', 'low-carb', 'low-fat', 'low-sodium'];
+const healthLabels = ['', 'vegetarian', 'vegan', 'gluten-free', 'dairy-free', 'soy-free', 'peanut-free'];
 
 const labelFor = (value, fallback) => value || fallback;
 
@@ -88,11 +88,25 @@ const RecipeCard = ({ recipe, isSaved, isFavorite, onSave, onToggleFavorite }) =
 );
 
 const Recipes = () => {
-  const { loading, searchRecipes } = useRecipes();
+  const {
+    loading,
+    error,
+    nextPageUrl,
+    searchRecipes,
+    getRecipesByDiet,
+    getRecipesByMealType,
+    getRecipesByHealthLabel,
+    getHighProteinRecipes,
+    getLowCalorieRecipes,
+    loadMoreRecipes,
+    clearError
+  } = useRecipes();
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState(initialFilters);
   const [searchResults, setSearchResults] = useState([]);
   const [resultCount, setResultCount] = useState(0);
+  const [activeRequest, setActiveRequest] = useState('Eiwitrijke recepten');
+  const [lastRequest, setLastRequest] = useState(null);
   const [savedRecipes, setSavedRecipes] = useState([]);
   const [favoriteRecipes, setFavoriteRecipes] = useState([]);
 
@@ -101,38 +115,68 @@ const Recipes = () => {
     setFavoriteRecipes(storage.getFavorites());
   }, []);
 
-  const handleSearch = useCallback(async () => {
-    const recipeFilters = {
-      cuisineType: filters.cuisineType,
-      mealType: filters.mealType,
-      diet: filters.diet,
-      health: filters.health,
-      calories: filters.maxCalories ? `0-${filters.maxCalories}` : '',
-      time: filters.maxTime ? `1-${filters.maxTime}` : ''
+  useEffect(() => {
+    const loadInitialRecipes = async () => {
+      const result = await getHighProteinRecipes();
+
+      if (result.success) {
+        setSearchResults(result.recipes);
+        setResultCount(result.totalResults || result.recipes.length);
+      }
     };
-    const result = await searchRecipes(searchTerm, recipeFilters, { from: 0, to: 10, total: 0 });
+
+    loadInitialRecipes();
+  }, []);
+
+  const executeRecipeRequest = async (label, request, options = {}) => {
+    clearError();
+    setActiveRequest(label);
+    setLastRequest({ label, request, options });
+
+    const result = await request();
 
     if (!result.success) {
-      setSearchResults([]);
-      setResultCount(0);
+      if (!options.append) {
+        setSearchResults([]);
+        setResultCount(0);
+      }
       return;
     }
 
-    setSearchResults(result.recipes);
+    setSearchResults((currentResults) => (
+      options.append ? [...currentResults, ...result.recipes] : result.recipes
+    ));
     setResultCount(result.totalResults || result.recipes.length);
-  }, [filters, searchRecipes, searchTerm]);
+  };
 
-  useEffect(() => {
-    handleSearch();
-  }, [handleSearch]);
+  const buildRecipeFilters = () => ({
+    cuisineType: filters.cuisineType,
+    mealType: filters.mealType,
+    diet: filters.diet,
+    health: filters.health,
+    calories: filters.maxCalories ? `lte ${filters.maxCalories}` : '',
+    time: filters.maxTime ? `1-${filters.maxTime}` : ''
+  });
 
-  const updateFilter = (name, value) => {
-    setFilters((currentFilters) => ({ ...currentFilters, [name]: value }));
+  const handleSearch = () => {
+    executeRecipeRequest(
+      'Zoekresultaten',
+      () => searchRecipes(searchTerm || 'healthy', buildRecipeFilters())
+    );
   };
 
   const resetFilters = () => {
     setFilters(initialFilters);
     setSearchTerm('');
+  };
+
+  const retryLastRequest = () => {
+    if (!lastRequest) return;
+    executeRecipeRequest(lastRequest.label, lastRequest.request, lastRequest.options);
+  };
+
+  const updateFilter = (name, value) => {
+    setFilters((currentFilters) => ({ ...currentFilters, [name]: value }));
   };
 
   const saveRecipe = (recipe) => {
@@ -164,13 +208,46 @@ const Recipes = () => {
     setFavoriteRecipes((favorites) => [...favorites, recipe]);
   };
 
+  const quickApiActions = [
+    {
+      label: 'Eiwitrijk',
+      description: 'getHighProteinRecipes()',
+      onClick: () => executeRecipeRequest('Eiwitrijke recepten', getHighProteinRecipes)
+    },
+    {
+      label: 'Laag in kcal',
+      description: 'getLowCalorieRecipes()',
+      onClick: () => executeRecipeRequest('Lage calorie recepten', getLowCalorieRecipes)
+    },
+    {
+      label: 'High-protein dieet',
+      description: 'getRecipesByDiet()',
+      onClick: () => executeRecipeRequest('Dieetfilter: high-protein', () => getRecipesByDiet('high-protein'))
+    },
+    {
+      label: 'Diner',
+      description: 'getRecipesByMealType()',
+      onClick: () => executeRecipeRequest('Maaltijdfilter: dinner', () => getRecipesByMealType('dinner'))
+    },
+    {
+      label: 'Vegan',
+      description: 'getRecipesByHealthLabel()',
+      onClick: () => executeRecipeRequest('Health label: vegan', () => getRecipesByHealthLabel('vegan'))
+    },
+    {
+      label: 'Zoeken met filters',
+      description: 'searchRecipes()',
+      onClick: handleSearch
+    }
+  ];
+
   return (
     <div className="recipe-search-page">
       <div className="recipe-search-hero">
         <div className="hero-text">
           <p className="breadcrumb">Home &gt; Maaltijden &gt; Recepten</p>
           <h1>Recepten zoeken</h1>
-          <p className="hero-subtitle">Vind de perfecte maaltijd voor jouw doelen en voorkeuren.</p>
+          <p className="hero-subtitle">Vind externe recepten via de Edamam Recipe Search API.</p>
         </div>
 
         <form onSubmit={(event) => { event.preventDefault(); handleSearch(); }} className="hero-search">
@@ -213,24 +290,15 @@ const Recipes = () => {
 
           <div className="filter-group">
             <label htmlFor="diet">Dieet</label>
-            <div className="pill-row">
-              {diets.map((diet) => (
-                <button
-                  key={diet}
-                  type="button"
-                  className={`pill ${filters.diet === diet ? 'pill-active' : ''}`}
-                  onClick={() => updateFilter('diet', filters.diet === diet ? '' : diet)}
-                >
-                  {diet}
-                </button>
-              ))}
-            </div>
+            <select id="diet" value={filters.diet} onChange={(event) => updateFilter('diet', event.target.value)}>
+              {diets.map((diet) => <option key={diet || 'none'} value={diet}>{labelFor(diet, 'Geen dieetfilter')}</option>)}
+            </select>
           </div>
 
           <div className="filter-group">
-            <label htmlFor="health">Allergieen</label>
+            <label htmlFor="health">Health label</label>
             <select id="health" value={filters.health} onChange={(event) => updateFilter('health', event.target.value)}>
-              {allergies.map((allergy) => <option key={allergy || 'none'} value={allergy}>{labelFor(allergy, 'Geen allergieen')}</option>)}
+              {healthLabels.map((health) => <option key={health || 'none'} value={health}>{labelFor(health, 'Geen health label')}</option>)}
             </select>
           </div>
 
@@ -246,35 +314,72 @@ const Recipes = () => {
           </div>
 
           <button className="apply-btn" onClick={handleSearch} type="button">Filters toepassen</button>
+
+          <div className="api-actions-panel">
+            <p className="panel-kicker">6 externe API functies</p>
+            <div className="api-action-grid">
+              {quickApiActions.map((action) => (
+                <button key={action.description} type="button" onClick={action.onClick} className="api-action-btn">
+                  <span>{action.label}</span>
+                  <small>{action.description}</small>
+                </button>
+              ))}
+            </div>
+          </div>
         </aside>
 
         <section className="results-panel">
           <div className="results-header">
             <div>
-              <p className="panel-kicker">Favorieten &gt;</p>
+              <p className="panel-kicker">{activeRequest}</p>
               <h2>Resultaten</h2>
             </div>
-            <span className="results-count">{resultCount} gevonden</span>
+            <span className="results-count">{loading ? 'Laden...' : `${resultCount} gevonden`}</span>
           </div>
 
           <div className="search-results">
             {loading ? (
-              <div className="loading"><div className="loading-spinner"></div><p>Recepten zoeken...</p></div>
-            ) : searchResults.length > 0 ? (
-              <div className="recipes-grid">
-                {searchResults.map((recipe) => (
-                  <RecipeCard
-                    key={recipe.id}
-                    recipe={recipe}
-                    isSaved={savedRecipes.some((savedRecipe) => savedRecipe.id === recipe.id)}
-                    isFavorite={favoriteRecipes.some((favorite) => favorite.id === recipe.id)}
-                    onSave={saveRecipe}
-                    onToggleFavorite={toggleFavorite}
-                  />
-                ))}
+              <div className="loading">
+                <div className="loading-spinner"></div>
+                <p>Externe recepten ophalen via Edamam...</p>
               </div>
+            ) : error ? (
+              <div className="api-error-state">
+                <h3>Recepten konden niet worden geladen</h3>
+                <p>{error}</p>
+                <button type="button" className="search-btn" onClick={retryLastRequest}>
+                  Opnieuw proberen
+                </button>
+              </div>
+            ) : searchResults.length > 0 ? (
+              <>
+                <div className="recipes-grid">
+                  {searchResults.map((recipe) => (
+                    <RecipeCard
+                      key={recipe.id}
+                      recipe={recipe}
+                      isSaved={savedRecipes.some((savedRecipe) => savedRecipe.id === recipe.id)}
+                      isFavorite={favoriteRecipes.some((favorite) => favorite.id === recipe.id)}
+                      onSave={saveRecipe}
+                      onToggleFavorite={toggleFavorite}
+                    />
+                  ))}
+                </div>
+                {nextPageUrl && (
+                  <button
+                    type="button"
+                    className="load-more-btn"
+                    onClick={() => executeRecipeRequest('Volgende Edamam pagina', loadMoreRecipes, { append: true })}
+                  >
+                    Meer externe recepten laden
+                  </button>
+                )}
+              </>
             ) : (
-              <div className="no-results"><h3>Geen recepten gevonden</h3><p>Pas je zoekterm of filters aan en probeer opnieuw.</p></div>
+              <div className="no-results">
+                <h3>Geen recepten gevonden</h3>
+                <p>De API gaf geen resultaten terug. Pas je zoekterm of filters aan en probeer opnieuw.</p>
+              </div>
             )}
           </div>
         </section>
