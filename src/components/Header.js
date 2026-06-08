@@ -9,11 +9,7 @@ const Header = () => {
   const location = useLocation();
 
   const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (error) {
-      console.error('Error logging out:', error);
-    }
+    await logout();
   };
 
   const isActive = (path) => (
