@@ -42,7 +42,7 @@ const WorkoutTracker = () => {
                 <div>
                   <p className="session-title">{session.title}</p>
                   <p className="session-meta">
-                    {session.time} • {session.type}
+                    {session.time} - {session.type}
                   </p>
                 </div>
                 <Link className="link" to={`/workouts/${session.id}`}>Details</Link>
