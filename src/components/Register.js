@@ -16,17 +16,17 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
+    setFormData((currentData) => ({
+      ...currentData,
       [name]: value
     }));
-    
-    // Clear errors when user types
+
     if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
+      setErrors((currentErrors) => ({
+        ...currentErrors,
         [name]: ''
       }));
     }
@@ -34,40 +34,40 @@ const Register = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.name.trim()) {
       newErrors.name = 'Naam is verplicht';
     }
-    
+
     if (!formData.email.trim()) {
       newErrors.email = 'E-mail is verplicht';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Voer een geldig e-mailadres in';
     }
-    
+
     if (!formData.password) {
       newErrors.password = 'Wachtwoord is verplicht';
     } else if (formData.password.length < 6) {
       newErrors.password = 'Wachtwoord moet minstens 6 tekens bevatten';
     }
-    
+
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Wachtwoorden komen niet overeen';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
     if (!validateForm()) {
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       const result = await registerUser({
         username: formData.email.trim(),
@@ -83,10 +83,8 @@ const Register = () => {
         setErrors({ form: result?.error || 'Registratie is mislukt. Probeer het opnieuw.' });
       }
     } catch (error) {
-      console.error('Error registering:', error);
       setErrors({ form: error.message || 'Er ging iets mis tijdens het registreren.' });
-      notificationService.error('Fout bij registreren',
-        'Er is een fout opgetreden tijdens het registreren');
+      notificationService.error('Fout bij registreren', 'Er is een fout opgetreden tijdens het registreren');
     } finally {
       setLoading(false);
     }
@@ -99,7 +97,7 @@ const Register = () => {
         <p className="auth-description">
           Maak een account aan om toegang te krijgen tot alle functies van Fitness Planet.
         </p>
-        
+
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
             <label htmlFor="name">Naam</label>
@@ -114,7 +112,7 @@ const Register = () => {
             />
             {errors.name && <span className="error-text">{errors.name}</span>}
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="email">E-mailadres</label>
             <input
@@ -128,7 +126,7 @@ const Register = () => {
             />
             {errors.email && <span className="error-text">{errors.email}</span>}
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="password">Wachtwoord</label>
             <input
@@ -142,7 +140,7 @@ const Register = () => {
             />
             {errors.password && <span className="error-text">{errors.password}</span>}
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="confirmPassword">Bevestig wachtwoord</label>
             <input
@@ -156,9 +154,9 @@ const Register = () => {
             />
             {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
           </div>
-          
-          <button 
-            type="submit" 
+
+          <button
+            type="submit"
             className="auth-button"
             disabled={loading}
           >
