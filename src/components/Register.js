@@ -4,7 +4,7 @@ import { notificationService } from '../utils/notificationService';
 import { useAuth } from '../contexts/AuthContext';
 import ActionButton from './ui/ActionButton';
 import FormField from './ui/FormField';
-import '../styles/Auth.css';
+import './Register.css';
 
 const registerFields = [
   { id: 'name', label: 'Naam', placeholder: 'Voer je naam in' },
