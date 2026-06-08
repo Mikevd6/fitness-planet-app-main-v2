@@ -1,30 +1,42 @@
 import React from 'react';
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { workoutSessions } from '../data/workouts';
+import ActionButton from './ui/ActionButton';
+import PageHeader from './ui/PageHeader';
+import ExerciseList from './workouts/ExerciseList';
+import WorkoutStatsGrid from './workouts/WorkoutStatsGrid';
 import '../styles/WorkoutTracker.css';
 
 const WorkoutDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const workout = workoutSessions.find((session) => session.id === id);
 
   if (!workout) {
     return <Navigate to="/workouts" replace />;
   }
 
+  const detailStats = [
+    { label: 'Type', value: workout.type },
+    { label: 'Duur', value: workout.duration },
+    { label: 'Intensiteit', value: workout.intensity },
+    { label: 'Calorieen', value: workout.calories }
+  ];
+
   return (
     <div className="workout-page workout-detail-page">
-      <div className="workout-header">
-        <div>
-          <p className="header-kicker">Workout details</p>
-          <h1>{workout.title}</h1>
-          <p className="header-subtitle">
-            Dynamische route: /workouts/{id}
-          </p>
-        </div>
-        <Link to="/workouts" className="pill secondary">
-          Terug naar workouts
-        </Link>
-      </div>
+      <PageHeader
+        kicker="Workout details"
+        title={workout.title}
+        subtitle={`Dynamische route: /workouts/${id}`}
+        actions={(
+          <ActionButton
+            className="pill secondary"
+            label="Terug naar workouts"
+            onClick={() => navigate('/workouts')}
+          />
+        )}
+      />
 
       <div className="workout-detail-grid">
         <section className="panel recent-panel workout-detail-main">
@@ -36,39 +48,14 @@ const WorkoutDetail = () => {
           </div>
           <p className="workout-description">{workout.description}</p>
 
-          <div className="workout-detail-stats">
-            <div className="stat-card light">
-              <p className="stat-label">Type</p>
-              <p className="stat-value">{workout.type}</p>
-            </div>
-            <div className="stat-card light">
-              <p className="stat-label">Duur</p>
-              <p className="stat-value">{workout.duration}</p>
-            </div>
-            <div className="stat-card light">
-              <p className="stat-label">Intensiteit</p>
-              <p className="stat-value">{workout.intensity}</p>
-            </div>
-            <div className="stat-card light">
-              <p className="stat-label">Calorieen</p>
-              <p className="stat-value">{workout.calories}</p>
-            </div>
-          </div>
+          <WorkoutStatsGrid
+            stats={detailStats}
+            className="workout-detail-stats"
+            cardClassName="stat-card light"
+          />
         </section>
 
-        <section className="panel workout-exercises-panel">
-          <div className="panel-header">
-            <div>
-              <p className="panel-kicker">Oefeningen</p>
-              <h3>Programma</h3>
-            </div>
-          </div>
-          <ul className="exercise-list">
-            {workout.exercises.map((exercise) => (
-              <li key={exercise}>{exercise}</li>
-            ))}
-          </ul>
-        </section>
+        <ExerciseList exercises={workout.exercises} />
       </div>
     </div>
   );
