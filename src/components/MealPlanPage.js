@@ -1,10 +1,8 @@
 import React from 'react';
 import { useMealPlan } from '../contexts/MealPlanContext';
-import { useAuth } from '../contexts/AuthContext';
 import '../styles/MealPlan.css';
 
 const MealPlanPage = () => {
-  useAuth();
   const { weekMenu, loading } = useMealPlan();
 
   const hasMeals = Object.values(weekMenu || {}).some(
