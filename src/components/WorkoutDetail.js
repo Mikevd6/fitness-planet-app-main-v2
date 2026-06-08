@@ -5,7 +5,7 @@ import ActionButton from './ui/ActionButton';
 import PageHeader from './ui/PageHeader';
 import ExerciseList from './workouts/ExerciseList';
 import WorkoutStatsGrid from './workouts/WorkoutStatsGrid';
-import '../styles/WorkoutTracker.css';
+import './WorkoutDetail.css';
 
 const WorkoutDetail = () => {
   const { id } = useParams();
