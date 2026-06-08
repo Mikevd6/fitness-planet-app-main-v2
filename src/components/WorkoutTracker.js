@@ -1,13 +1,9 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { workoutSessions } from '../data/workouts';
 import '../styles/WorkoutTracker.css';
 
 const WorkoutTracker = () => {
-  const sessions = [
-    { title: 'Back & Shoulders', time: 'Afgelopen weekend', type: 'Functioneel' },
-    { title: 'HIT Cardio', time: '11 Januari 2021', type: 'Cardio' },
-    { title: 'Bootcamp', time: 'Maandag', type: 'Volledig lichaam' },
-  ];
-
   const stats = [
     { label: 'Sessions', value: '3/5', detail: 'Deze week' },
     { label: 'Totale tijd', value: '6h 42m', detail: 'Deze week' },
@@ -38,18 +34,18 @@ const WorkoutTracker = () => {
               <p className="panel-kicker">Recent Sessions</p>
               <h3>Laatste geplande sessies</h3>
             </div>
-            <a className="link" href="#">Details</a>
+            <Link className="link" to="/workouts/back-shoulders">Details</Link>
           </div>
           <ul className="session-list">
-            {sessions.map((session) => (
-              <li key={session.title} className="session-item">
+            {workoutSessions.map((session) => (
+              <li key={session.id} className="session-item">
                 <div>
                   <p className="session-title">{session.title}</p>
                   <p className="session-meta">
                     {session.time} • {session.type}
                   </p>
                 </div>
-                <a className="link" href="#">Details</a>
+                <Link className="link" to={`/workouts/${session.id}`}>Details</Link>
               </li>
             ))}
           </ul>
