@@ -1,37 +1,101 @@
-/* Basic reset and global styles */
+:root {
+  --color-primary: #667eea;
+  --color-primary-dark: #4f46e5;
+  --color-secondary: #764ba2;
+  --color-accent: #00e1ff;
+  --color-background: #f8fafc;
+  --color-background-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --color-surface: #ffffff;
+  --color-surface-soft: #f5f7ff;
+  --color-text: #1f2937;
+  --color-heading: #0f1445;
+  --color-muted: #64748b;
+  --color-muted-light: #dfe6ff;
+  --color-border: #d8def8;
+  --color-error: #dc2626;
+  --color-error-soft: #fef2f2;
+  --color-success: #16a34a;
+  --color-white: #ffffff;
+  --shadow-soft: 0 8px 25px rgba(0, 0, 0, 0.08);
+  --shadow-strong: 0 18px 55px rgba(40, 12, 94, 0.35);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --space-page: clamp(16px, 4vw, 32px);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
 * {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+  min-width: 0;
+}
+
+html {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  width: 100%;
   min-height: 100vh;
-  color: #333;
+  margin: 0;
+  overflow-x: hidden;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--color-text);
+  background: var(--color-background-gradient);
+}
+
+#root {
+  min-height: 100vh;
+  width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+a {
+  color: inherit;
+}
+
+img,
+picture,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
-/* Remove default focus outlines for mouse users, but keep them for keyboard navigation */
 :focus:not(:focus-visible) {
   outline: none;
 }
 
 :focus-visible {
-  outline: 2px solid #4f46e5;
+  outline: 2px solid var(--color-primary-dark);
   outline-offset: 2px;
 }
 
-/* Accessibility - Make sure elements have appropriate contrast */
 @media (prefers-contrast: high) {
   body {
-    background: white;
-    color: black;
+    background: var(--color-white);
+    color: #000000;
   }
 }
