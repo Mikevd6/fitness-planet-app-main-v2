@@ -1,0 +1,32 @@
+.session-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--color-surface-soft);
+}
+
+.session-content {
+  min-width: 0;
+}
+
+.session-title {
+  margin: 0;
+  color: var(--color-heading);
+  font-weight: 700;
+}
+
+.session-meta {
+  margin: 4px 0 0;
+  color: #54619f;
+  font-size: 14px;
+}
+
+@media (max-width: 480px) {
+  .session-item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
