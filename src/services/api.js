@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { notifyUnauthorized } from '../utils/authEvents';
 
 const DEFAULT_NOVI_API_KEY = 'fitnessplanet:7m997U9ozv6dJ9JLyWh9';
 
@@ -44,7 +45,7 @@ apiClient.interceptors.response.use(
     // Handle 401 Unauthorized errors (token expired)
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      notifyUnauthorized();
     }
     return Promise.reject(error);
   }
