@@ -1,70 +1,80 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { workoutSessions } from '../data/workouts';
+import ActionButton from './ui/ActionButton';
+import PageHeader from './ui/PageHeader';
+import WorkoutList from './workouts/WorkoutList';
+import WorkoutPlanForm from './workouts/WorkoutPlanForm';
+import WorkoutStatsGrid from './workouts/WorkoutStatsGrid';
 import '../styles/WorkoutTracker.css';
 
-const WorkoutTracker = () => {
-  const stats = [
-    { label: 'Sessions', value: '3/5', detail: 'Deze week' },
-    { label: 'Totale tijd', value: '6h 42m', detail: 'Deze week' },
-    { label: 'Gem. tempo', value: 'OK', detail: '12.26 minuten' },
-    { label: 'Compliance', value: '75%', detail: 'Deze week' },
-  ];
+const workoutStats = [
+  { label: 'Sessions', value: '3/5', detail: 'Deze week' },
+  { label: 'Totale tijd', value: '6h 42m', detail: 'Deze week' },
+  { label: 'Gem. tempo', value: 'OK', detail: '12.26 minuten' },
+  { label: 'Compliance', value: '75%', detail: 'Deze week' }
+];
 
-  const chartPoints = [50, 65, 58, 72, 60, 68, 62];
+const chartPoints = [50, 65, 58, 72, 60, 68, 62];
+
+const initialWorkoutForm = {
+  type: 'Functioneel',
+  intensity: 'Lage',
+  date: '2022-05-05',
+  time: '15:00',
+  notes: ''
+};
+
+const WorkoutTracker = () => {
+  const navigate = useNavigate();
+  const [workoutForm, setWorkoutForm] = useState(initialWorkoutForm);
+
+  const openWorkoutDetails = (workoutId) => {
+    navigate(`/workouts/${workoutId}`);
+  };
+
+  const updateWorkoutForm = (event) => {
+    const { name, value } = event.target;
+
+    setWorkoutForm((currentForm) => ({
+      ...currentForm,
+      [name]: value
+    }));
+  };
+
+  const submitWorkoutForm = (event) => {
+    event.preventDefault();
+    setWorkoutForm(initialWorkoutForm);
+  };
 
   return (
     <div className="workout-page">
-      <div className="workout-header">
-        <div>
-          <p className="header-kicker">Voortgang</p>
-          <h1>Workouts</h1>
-          <p className="header-subtitle">Je voortgang en prestaties op een plek.</p>
-        </div>
-        <div className="header-actions">
-          <button className="pill">Snelle Workout</button>
-          <button className="pill secondary">Importeren</button>
-        </div>
-      </div>
+      <PageHeader
+        kicker="Voortgang"
+        title="Workouts"
+        subtitle="Je voortgang en prestaties op een plek."
+        actions={(
+          <>
+            <ActionButton className="pill" label="Snelle Workout" onClick={() => openWorkoutDetails('bootcamp')} />
+            <ActionButton className="pill secondary" label="Importeren" onClick={() => openWorkoutDetails('hit-cardio')} />
+          </>
+        )}
+      />
 
       <div className="workout-grid">
-        <div className="panel recent-panel">
-          <div className="panel-header">
-            <div>
-              <p className="panel-kicker">Recent Sessions</p>
-              <h3>Laatste geplande sessies</h3>
-            </div>
-            <Link className="link" to="/workouts/back-shoulders">Details</Link>
-          </div>
-          <ul className="session-list">
-            {workoutSessions.map((session) => (
-              <li key={session.id} className="session-item">
-                <div>
-                  <p className="session-title">{session.title}</p>
-                  <p className="session-meta">
-                    {session.time} - {session.type}
-                  </p>
-                </div>
-                <Link className="link" to={`/workouts/${session.id}`}>Details</Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <WorkoutList
+          title="Laatste geplande sessies"
+          kicker="Recent Sessions"
+          workouts={workoutSessions}
+          onSelectWorkout={openWorkoutDetails}
+        />
 
         <div className="panel stats-panel">
           <div className="panel-header">
             <p className="panel-kicker">Statistieken</p>
             <h3>Bekijk hoe je presteert</h3>
           </div>
-          <div className="stats-grid">
-            {stats.map((stat) => (
-              <div key={stat.label} className="stat-card">
-                <p className="stat-label">{stat.label}</p>
-                <p className="stat-value">{stat.value}</p>
-                <p className="stat-detail">{stat.detail}</p>
-              </div>
-            ))}
-          </div>
+          <WorkoutStatsGrid stats={workoutStats} />
         </div>
 
         <div className="panel chart-panel">
@@ -73,7 +83,7 @@ const WorkoutTracker = () => {
               <p className="panel-kicker">Workout Statistieken</p>
               <h3>Weekoverzicht</h3>
             </div>
-            <button className="pill ghost">+ Toevoegen</button>
+            <ActionButton className="pill ghost" label="+ Toevoegen" onClick={() => openWorkoutDetails('back-shoulders')} />
           </div>
           <div className="chart-body">
             <div className="chart-lines">
@@ -93,62 +103,11 @@ const WorkoutTracker = () => {
           </div>
         </div>
 
-        <div className="panel form-panel">
-          <div className="panel-header">
-            <p className="panel-kicker">Nieuwe Workout</p>
-            <h3>Plan een nieuwe sessie</h3>
-          </div>
-          <form className="workout-form">
-            <div className="form-row">
-              <div className="form-control">
-                <label htmlFor="type">Type</label>
-                <select id="type" defaultValue="Functioneel">
-                  <option>Functioneel</option>
-                  <option>Cardio</option>
-                  <option>Kracht</option>
-                  <option>Volledig lichaam</option>
-                </select>
-              </div>
-              <div className="form-control">
-                <label htmlFor="intensity">Intensiteit</label>
-                <select id="intensity" defaultValue="Lage">
-                  <option>Hoog</option>
-                  <option>Middel</option>
-                  <option>Lage</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-control">
-                <label htmlFor="date">Datum</label>
-                <input id="date" type="date" defaultValue="2022-05-05" />
-              </div>
-              <div className="form-control">
-                <label htmlFor="time">Tijd</label>
-                <input id="time" type="time" defaultValue="15:00" />
-              </div>
-            </div>
-
-            <div className="form-control">
-              <label htmlFor="notes">Notities</label>
-              <textarea
-                id="notes"
-                placeholder="Voeg je plan, doelen, etc toe..."
-                rows={3}
-              ></textarea>
-            </div>
-
-            <div className="form-actions">
-              <button type="button" className="pill secondary">
-                Opslaan en plannen
-              </button>
-              <button type="submit" className="pill">
-                Toevoegen
-              </button>
-            </div>
-          </form>
-        </div>
+        <WorkoutPlanForm
+          formValues={workoutForm}
+          onFieldChange={updateWorkoutForm}
+          onSubmit={submitWorkoutForm}
+        />
       </div>
     </div>
   );
