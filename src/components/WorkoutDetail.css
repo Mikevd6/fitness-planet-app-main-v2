@@ -1,0 +1,31 @@
+@import './WorkoutTracker.css';
+
+.workout-detail-grid {
+  width: min(100%, 1200px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
+  gap: 18px;
+}
+
+.workout-detail-main {
+  grid-row: auto;
+}
+
+.workout-description {
+  margin: 0 0 18px;
+  color: #54619f;
+  line-height: 1.7;
+}
+
+@media (max-width: 1024px) {
+  .workout-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .workout-detail-grid {
+    gap: 14px;
+  }
+}
