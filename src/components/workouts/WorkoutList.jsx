@@ -1,4 +1,5 @@
 import WorkoutCard from './WorkoutCard';
+import './WorkoutList.css';
 
 const WorkoutList = ({ title, kicker, workouts, onSelectWorkout }) => (
   <div className="panel recent-panel">
