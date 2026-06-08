@@ -1,3 +1,5 @@
+import './WorkoutStatsGrid.css';
+
 const WorkoutStatsGrid = ({ stats, className = 'stats-grid', cardClassName = 'stat-card' }) => (
   <div className={className}>
     {stats.map((stat) => (
