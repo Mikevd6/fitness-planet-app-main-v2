@@ -1,0 +1,52 @@
+.workout-header,
+.profile-settings__header {
+  width: min(100%, 1200px);
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.workout-header h1,
+.profile-settings__header h1 {
+  margin: 0;
+  color: inherit;
+}
+
+.header-kicker,
+.profile-settings__eyebrow {
+  margin: 0 0 8px;
+  color: var(--color-muted-light);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.header-subtitle,
+.profile-settings__subtitle {
+  margin: 6px 0 0;
+  color: var(--color-muted-light);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .workout-header,
+  .profile-settings__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
