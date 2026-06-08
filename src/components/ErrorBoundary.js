@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { withErrorHandling } from '../utils/errorHandling';
 
 /**
@@ -36,6 +37,11 @@ class ErrorBoundary extends Component {
     })();
   }
 
+  goHome = () => {
+    this.setState({ hasError: false });
+    this.props.navigate('/', { replace: true });
+  };
+
   render() {
     const { fallback, children } = this.props;
     
@@ -64,10 +70,7 @@ class ErrorBoundary extends Component {
               Pagina vernieuwen
             </button>
             <button
-              onClick={() => {
-                this.setState({ hasError: false });
-                window.location.href = '/';
-              }}
+              onClick={this.goHome}
               className="button"
             >
               Naar startpagina
@@ -89,4 +92,9 @@ class ErrorBoundary extends Component {
   }
 }
 
-export default ErrorBoundary;
+const ErrorBoundaryWithNavigation = (props) => {
+  const navigate = useNavigate();
+  return <ErrorBoundary {...props} navigate={navigate} />;
+};
+
+export default ErrorBoundaryWithNavigation;
