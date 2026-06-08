@@ -1,3 +1,5 @@
+import './FormField.css';
+
 const normalizeOption = (option) => (
   typeof option === 'string' ? { value: option, label: option } : option
 );
@@ -17,7 +19,7 @@ const FormField = ({
   disabled = false,
   required = false
 }) => (
-  <div className="form-group form-control">
+  <div className="form-field form-group form-control">
     <label htmlFor={id}>{label}</label>
     {type === 'select' ? (
       <select
