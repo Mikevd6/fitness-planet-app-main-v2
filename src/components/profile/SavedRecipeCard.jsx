@@ -1,4 +1,5 @@
 import ActionButton from '../ui/ActionButton';
+import './SavedRecipeCard.css';
 
 const SavedRecipeCard = ({ recipe, onRemove }) => (
   <article className="saved-recipe">
