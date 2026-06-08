@@ -1,0 +1,51 @@
+.stats-grid,
+.workout-detail-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.stat-card {
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.stat-card.light {
+  border-color: var(--color-border);
+  background: var(--color-surface-soft);
+}
+
+.stat-label {
+  margin: 0 0 6px;
+  color: var(--color-muted-light);
+  font-size: 13px;
+}
+
+.stat-card.light .stat-label {
+  color: #54619f;
+}
+
+.stat-value {
+  margin: 0;
+  color: var(--color-white);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.stat-card.light .stat-value {
+  color: var(--color-heading);
+}
+
+.stat-detail {
+  margin: 4px 0 0;
+  color: var(--color-muted-light);
+}
+
+@media (max-width: 640px) {
+  .stats-grid,
+  .workout-detail-stats {
+    grid-template-columns: 1fr;
+  }
+}
