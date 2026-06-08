@@ -1,0 +1,24 @@
+.recent-panel {
+  grid-row: span 2;
+  background: var(--color-surface);
+  color: var(--color-heading);
+}
+
+.recent-panel .panel-kicker,
+.recent-panel h3 {
+  color: var(--color-heading);
+}
+
+.session-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 1024px) {
+  .recent-panel {
+    grid-row: auto;
+  }
+}
