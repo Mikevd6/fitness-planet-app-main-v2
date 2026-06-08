@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { storage } from './localStorage';
+import { notifyUnauthorized } from './authEvents';
 
 // Create axios instance with default config
 const api = axios.create({
@@ -85,7 +86,7 @@ api.interceptors.response.use(
       } catch (refreshError) {
         // Refresh failed, logout user
         storage.clearUser();
-        window.location.href = '/login';
+        notifyUnauthorized();
       }
     }
     
