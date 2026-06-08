@@ -1,5 +1,5 @@
 ﻿import React, { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import '../styles/Login.css';
 
@@ -11,12 +11,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  const { user, login } = useAuth();
-
-  // If user is already logged in, redirect to dashboard
-  if (user) {
-    return <Navigate to="/dashboard" replace />;
-  }
+  const { login } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -46,7 +41,7 @@ const Login = () => {
       if (!result?.success) {
         setError(result?.error || 'Login failed. Please try again.');
       }
-      // Navigation will happen automatically due to auth state change
+      // PublicRoute redirects to the dashboard when auth state changes.
     } catch (err) {
       setError(err.message || 'Login failed. Please try again.');
     } finally {
