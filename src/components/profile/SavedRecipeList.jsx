@@ -1,5 +1,6 @@
 import EmptyState from '../ui/EmptyState';
 import SavedRecipeCard from './SavedRecipeCard';
+import './SavedRecipeList.css';
 
 const SavedRecipeList = ({ recipes, onRemoveRecipe }) => {
   if (recipes.length === 0) {
