@@ -1,0 +1,5 @@
+.profile-settings__recipes {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
