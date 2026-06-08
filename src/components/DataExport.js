@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { storage } from '../utils/localStorage';
 import { notificationService } from '../utils/notificationService';
 import '../styles/DataExport.css';
 
 const DataExport = ({ user }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
   
   const exportUserData = async () => {
     setIsLoading(true);
@@ -40,7 +42,7 @@ const DataExport = ({ user }) => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       
-      notificationService.success('Gegevens geëxporteerd', 'Je gegevens zijn succesvol geëxporteerd');
+      notificationService.success('Gegevens geexporteerd', 'Je gegevens zijn succesvol geexporteerd');
     } catch (error) {
       console.error('Error exporting data:', error);
       notificationService.error('Fout bij exporteren', 'Er is een fout opgetreden bij het exporteren van je gegevens');
@@ -61,7 +63,7 @@ const DataExport = ({ user }) => {
         storage.clearAll();
         
         notificationService.success('Account verwijderd', 'Je account is succesvol verwijderd');
-        window.location.href = '/login';
+        navigate('/login', { replace: true });
       } catch (error) {
         console.error('Error deleting account:', error);
         notificationService.error('Fout bij verwijderen', 'Er is een fout opgetreden bij het verwijderen van je account');
@@ -108,7 +110,7 @@ const DataExport = ({ user }) => {
         </ul>
         
         <p>
-          Voor meer informatie, zie ons <a href="/privacy-beleid">privacybeleid</a>.
+          Voor meer informatie, zie ons <Link to="/privacy-beleid">privacybeleid</Link>.
         </p>
       </div>
     </div>
