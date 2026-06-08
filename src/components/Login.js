@@ -1,6 +1,8 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import ActionButton from './ui/ActionButton';
+import FormField from './ui/FormField';
 import '../styles/Login.css';
 
 const Login = () => {
@@ -10,21 +12,21 @@ const Login = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
   const { login } = useAuth();
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
+    setFormData((currentData) => ({
+      ...currentData,
       [name]: value
     }));
-    // Clear error when user starts typing
+
     if (error) setError('');
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setLoading(true);
     setError('');
 
@@ -41,7 +43,6 @@ const Login = () => {
       if (!result?.success) {
         setError(result?.error || 'Login failed. Please try again.');
       }
-      // PublicRoute redirects to the dashboard when auth state changes.
     } catch (err) {
       setError(err.message || 'Login failed. Please try again.');
     } finally {
@@ -91,52 +92,41 @@ const Login = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">
-            <div className="form-group">
-              <label htmlFor="email">E-mailadres</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="je@email.com"
-                required
-                disabled={loading}
-              />
-            </div>
+            <FormField
+              id="email"
+              label="E-mailadres"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="je@email.com"
+              disabled={loading}
+              required
+            />
 
-            <div className="form-group">
-              <label htmlFor="password">Wachtwoord</label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Je wachtwoord"
-                required
-                disabled={loading}
-              />
-            </div>
+            <FormField
+              id="password"
+              label="Wachtwoord"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Je wachtwoord"
+              disabled={loading}
+              required
+            />
 
-            {error && (
-              <div className="error-message">
-                {error}
-              </div>
-            )}
+            {error && <div className="error-message">{error}</div>}
 
-            <button
+            <ActionButton
               type="submit"
               className="login-btn"
               disabled={loading}
-            >
-              {loading ? 'Bezig met inloggen...' : 'Inloggen'}
-            </button>
+              label={loading ? 'Bezig met inloggen...' : 'Inloggen'}
+            />
           </form>
 
           <div className="login-footer">
             <p>
-              Nog geen account? {' '}
+              Nog geen account?{' '}
               <Link to="/register" className="link">
                 Registreer hier
               </Link>
