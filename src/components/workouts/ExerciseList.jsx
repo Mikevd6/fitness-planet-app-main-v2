@@ -1,3 +1,5 @@
+import './ExerciseList.css';
+
 const ExerciseList = ({ title = 'Programma', kicker = 'Oefeningen', exercises }) => (
   <section className="panel workout-exercises-panel">
     <div className="panel-header">
