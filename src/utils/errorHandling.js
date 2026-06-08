@@ -3,8 +3,9 @@
  */
 
 import { notificationService } from './notificationService';
+import { notifyUnauthorized } from './authEvents';
 
-// Error categorieën voor betere gebruikersfeedback
+// Error categorieen voor betere gebruikersfeedback
 const ERROR_CATEGORIES = {
   NETWORK: 'network',
   VALIDATION: 'validation',
@@ -115,7 +116,7 @@ export function handleError(error, options = {}) {
   if (categorizeError(error) === ERROR_CATEGORIES.AUTHENTICATION) {
     // Redirect naar login pagina na korte timeout zodat gebruiker het bericht kan zien
     setTimeout(() => {
-      window.location.href = '/login';
+      notifyUnauthorized();
     }, 2000);
   }
 }
