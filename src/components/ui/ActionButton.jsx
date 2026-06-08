@@ -1,3 +1,5 @@
+import './ActionButton.css';
+
 const ActionButton = ({
   children,
   label,
@@ -9,7 +11,7 @@ const ActionButton = ({
 }) => (
   <button
     type={type}
-    className={className}
+    className={`action-button ${className}`.trim()}
     disabled={disabled}
     onClick={onClick}
     {...buttonProps}
