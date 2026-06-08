@@ -186,6 +186,47 @@
   box-shadow: 0 12px 30px rgba(9, 163, 250, 0.25);
 }
 
+.api-actions-panel {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.api-action-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.api-action-btn {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  text-align: left;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.api-action-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+
+.api-action-btn span {
+  font-weight: 800;
+}
+
+.api-action-btn small {
+  color: rgba(255, 255, 255, 0.72);
+}
+
 .results-panel {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 20px;
@@ -438,6 +479,37 @@
   text-align: center;
   color: #fff;
   padding: 20px 0;
+}
+
+.api-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  background: rgba(127, 29, 29, 0.24);
+  color: #fff;
+  text-align: center;
+}
+
+.api-error-state h3,
+.api-error-state p {
+  margin: 0;
+}
+
+.load-more-btn {
+  display: block;
+  width: min(100%, 320px);
+  margin: 18px auto 0;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
 }
 
 @keyframes spin {
