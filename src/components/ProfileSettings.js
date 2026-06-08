@@ -1,46 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { storage } from '../utils/localStorage';
 import { notificationService } from '../utils/notificationService';
+import { getSavedRecipes, saveSavedRecipes } from '../utils/recipeStorage';
 import '../styles/ProfileSettings.css';
 
 const ProfileSettings = () => {
   const [savedRecipes, setSavedRecipes] = useState([]);
 
-  const mergeSavedRecipes = (primaryRecipes, secondaryRecipes) => {
-    const recipeMap = new Map();
-    [...secondaryRecipes, ...primaryRecipes].forEach(recipe => {
-      if (recipe?.id && !recipeMap.has(recipe.id)) {
-        recipeMap.set(recipe.id, recipe);
-      }
-    });
-    return Array.from(recipeMap.values());
-  };
-
   useEffect(() => {
-    const profile = storage.getProfile();
-    const profileSaved = Array.isArray(profile?.savedRecipes) ? profile.savedRecipes : [];
-    const legacySaved = storage.getSavedRecipes ? storage.getSavedRecipes() : [];
-    const mergedSaved = mergeSavedRecipes(profileSaved, legacySaved);
-
-    if (mergedSaved.length !== profileSaved.length) {
-      storage.setProfile({ ...profile, savedRecipes: mergedSaved });
-    }
-
-    if (storage.setSavedRecipes) {
-      storage.setSavedRecipes(mergedSaved);
-    }
-
-    setSavedRecipes(mergedSaved);
+    setSavedRecipes(getSavedRecipes());
   }, []);
 
   const removeSavedRecipe = (recipeId) => {
-    const profile = storage.getProfile();
-    const updatedRecipes = savedRecipes.filter(recipe => recipe.id !== recipeId);
-    storage.setProfile({ ...profile, savedRecipes: updatedRecipes });
-
-    if (storage.setSavedRecipes) {
-      storage.setSavedRecipes(updatedRecipes);
-    }
+    const updatedRecipes = saveSavedRecipes(
+      savedRecipes.filter((recipe) => recipe.id !== recipeId)
+    );
 
     setSavedRecipes(updatedRecipes);
     notificationService.success('Recept verwijderd', 'Het recept is verwijderd uit je profiel.');
@@ -68,7 +41,7 @@ const ProfileSettings = () => {
           </div>
         ) : (
           <div className="profile-settings__recipes">
-            {savedRecipes.map(recipe => (
+            {savedRecipes.map((recipe) => (
               <article key={recipe.id} className="saved-recipe">
                 <img
                   src={recipe.image || '/images/recipes/default-recipe.jpg'}
