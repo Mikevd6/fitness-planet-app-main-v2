@@ -1,21 +1,18 @@
-﻿// Edamam Recipe API Service
 class EdamamService {
   constructor() {
-    this.baseUrl = process.env.REACT_APP_EDAMAM_BASE_URL || 'https://api.edamam.com';
-    this.appId = process.env.REACT_APP_EDAMAM_APP_ID;
-    this.appKey = process.env.REACT_APP_EDAMAM_APP_KEY;
+    this.baseUrl = import.meta.env.VITE_EDAMAM_BASE_URL || 'https://api.edamam.com';
+    this.appId = import.meta.env.VITE_EDAMAM_APP_ID;
+    this.appKey = import.meta.env.VITE_EDAMAM_APP_KEY;
     this.recipeSearchUrl = `${this.baseUrl}/api/recipes/v2`;
     this.nutritionUrl = `${this.baseUrl}/api/nutrition-data/v2/nutrients`;
   }
 
-  // Validate API credentials
   validateCredentials() {
     if (!this.appId || !this.appKey) {
-      throw new Error('Edamam API credentials not configured. Please check your environment variables.');
+      throw new Error('Edamam API credentials are missing. Add VITE_EDAMAM_APP_ID and VITE_EDAMAM_APP_KEY.');
     }
   }
 
-  // Search recipes with advanced filters
   async searchRecipes(options = {}) {
     try {
       this.validateCredentials();
@@ -49,7 +46,6 @@ class EdamamService {
         to: safeTo.toString()
       });
 
-      // Add optional filters
       if (cuisineType) params.append('cuisineType', cuisineType);
       if (mealType) params.append('mealType', mealType);
       if (dishType) params.append('dishType', dishType);
@@ -58,13 +54,12 @@ class EdamamService {
       if (calories) params.append('calories', calories);
       if (time) params.append('time', time);
 
-      // Add nutrient filters
       Object.entries(nutrients).forEach(([key, value]) => {
         if (value) params.append(key, value);
       });
 
       const response = await fetch(`${this.recipeSearchUrl}?${params.toString()}`);
-      
+
       if (!response.ok) {
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
@@ -79,7 +74,6 @@ class EdamamService {
         to: data.to || 0
       };
     } catch (error) {
-      console.error('Recipe search error:', error);
       return {
         success: false,
         error: error.message,
@@ -88,7 +82,6 @@ class EdamamService {
     }
   }
 
-  // Get recipe by URI
   async getRecipeByUri(uri) {
     try {
       this.validateCredentials();
@@ -97,11 +90,11 @@ class EdamamService {
         type: 'public',
         app_id: this.appId,
         app_key: this.appKey,
-        uri: uri
+        uri
       });
 
       const response = await fetch(`${this.baseUrl}/api/recipes/v2/by-uri?${params.toString()}`);
-      
+
       if (!response.ok) {
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
@@ -114,7 +107,6 @@ class EdamamService {
         recipe: recipes[0] || null
       };
     } catch (error) {
-      console.error('Recipe fetch error:', error);
       return {
         success: false,
         error: error.message,
@@ -123,7 +115,6 @@ class EdamamService {
     }
   }
 
-  // Get nutrition analysis
   async getNutritionAnalysis(ingredients) {
     try {
       this.validateCredentials();
@@ -136,11 +127,9 @@ class EdamamService {
       const response = await fetch(`${this.nutritionUrl}?${params.toString()}`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          ingr: ingredients
-        })
+        body: JSON.stringify({ ingr: ingredients })
       });
 
       if (!response.ok) {
@@ -154,7 +143,6 @@ class EdamamService {
         nutrition: this.transformNutritionData(data)
       };
     } catch (error) {
-      console.error('Nutrition analysis error:', error);
       return {
         success: false,
         error: error.message,
@@ -163,10 +151,11 @@ class EdamamService {
     }
   }
 
-  // Transform raw recipe data to app format
   transformRecipes(hits) {
-    return hits.map(hit => {
+    return hits.map((hit) => {
       const recipe = hit.recipe;
+      const servings = recipe.yield || 1;
+
       return {
         id: this.generateRecipeId(recipe.uri),
         uri: recipe.uri,
@@ -179,7 +168,7 @@ class EdamamService {
         yield: recipe.yield,
         prepTime: recipe.totalTime || null,
         calories: Math.round(recipe.calories) || 0,
-        caloriesPerServing: Math.round(recipe.calories / recipe.yield) || 0,
+        caloriesPerServing: Math.round(recipe.calories / servings) || 0,
         ingredients: recipe.ingredientLines || [],
         instructions: recipe.instructions || [],
         cuisineType: recipe.cuisineType || [],
@@ -188,17 +177,17 @@ class EdamamService {
         dietLabels: recipe.dietLabels || [],
         healthLabels: recipe.healthLabels || [],
         macros: {
-          protein: Math.round((recipe.totalNutrients?.PROCNT?.quantity || 0) / recipe.yield),
-          carbs: Math.round((recipe.totalNutrients?.CHOCDF?.quantity || 0) / recipe.yield),
-          fat: Math.round((recipe.totalNutrients?.FAT?.quantity || 0) / recipe.yield),
-          fiber: Math.round((recipe.totalNutrients?.FIBTG?.quantity || 0) / recipe.yield)
+          protein: Math.round((recipe.totalNutrients?.PROCNT?.quantity || 0) / servings),
+          carbs: Math.round((recipe.totalNutrients?.CHOCDF?.quantity || 0) / servings),
+          fat: Math.round((recipe.totalNutrients?.FAT?.quantity || 0) / servings),
+          fiber: Math.round((recipe.totalNutrients?.FIBTG?.quantity || 0) / servings)
         },
-        nutrients: this.transformNutrients(recipe.totalNutrients, recipe.yield),
+        nutrients: this.transformNutrients(recipe.totalNutrients, servings),
         tags: [
-          ...recipe.cuisineType || [],
-          ...recipe.mealType || [],
-          ...recipe.dishType || [],
-          ...recipe.dietLabels || []
+          ...(recipe.cuisineType || []),
+          ...(recipe.mealType || []),
+          ...(recipe.dishType || []),
+          ...(recipe.dietLabels || [])
         ],
         isFavorite: false,
         addedAt: new Date().toISOString()
@@ -206,7 +195,6 @@ class EdamamService {
     });
   }
 
-  // Transform nutrition data
   transformNutritionData(data) {
     return {
       calories: Math.round(data.calories || 0),
@@ -219,29 +207,23 @@ class EdamamService {
     };
   }
 
-  // Transform nutrients for easier use
   transformNutrients(totalNutrients, servings = 1) {
     if (!totalNutrients) return {};
 
-    const nutrients = {};
-    
-    Object.entries(totalNutrients).forEach(([key, nutrient]) => {
-      nutrients[key] = {
+    return Object.entries(totalNutrients).reduce((nutrients, [key, nutrient]) => ({
+      ...nutrients,
+      [key]: {
         label: nutrient.label,
         quantity: Math.round((nutrient.quantity || 0) / servings),
         unit: nutrient.unit
-      };
-    });
-
-    return nutrients;
+      }
+    }), {});
   }
 
-  // Generate unique recipe ID from URI
   generateRecipeId(uri) {
     return uri.split('/').pop().split('?')[0];
   }
 
-  // Get recipe suggestions based on user preferences
   async getPersonalizedRecipes(userProfile) {
     const {
       dietPreferences = [],
@@ -251,48 +233,39 @@ class EdamamService {
       cuisinePreferences = []
     } = userProfile;
 
-    const searchOptions = {
-      query: cuisinePreferences.length > 0 ? cuisinePreferences[0] : 'healthy',
-      mealType: mealType,
-      diet: dietPreferences.length > 0 ? dietPreferences[0] : '',
+    return this.searchRecipes({
+      query: cuisinePreferences[0] || 'healthy',
+      mealType,
+      diet: dietPreferences[0] || '',
       health: healthRestrictions.length > 0 ? healthRestrictions.join(',') : '',
       calories: calorieGoal ? `0-${calorieGoal}` : '',
       from: 0,
       to: 12
-    };
-
-    return await this.searchRecipes(searchOptions);
+    });
   }
 
-  // Get alternative recipes similar to a given recipe
   async getAlternativeRecipes(originalRecipe, count = 3) {
-    const searchOptions = {
+    const result = await this.searchRecipes({
       query: originalRecipe.cuisineType?.[0] || originalRecipe.title.split(' ')[0],
       mealType: originalRecipe.mealType?.[0] || '',
       diet: originalRecipe.dietLabels?.[0] || '',
       calories: `${Math.max(0, originalRecipe.caloriesPerServing - 100)}-${originalRecipe.caloriesPerServing + 100}`,
       from: 0,
-      to: count + 5 // Get a few extra to filter out the original
-    };
+      to: count + 5
+    });
 
-    const result = await this.searchRecipes(searchOptions);
-    
-    if (result.success) {
-      // Filter out the original recipe and return only the requested count
-      const alternatives = result.recipes
-        .filter(recipe => recipe.id !== originalRecipe.id)
-        .slice(0, count);
-      
-      return {
-        success: true,
-        recipes: alternatives
-      };
+    if (!result.success) {
+      return result;
     }
 
-    return result;
+    return {
+      success: true,
+      recipes: result.recipes
+        .filter((recipe) => recipe.id !== originalRecipe.id)
+        .slice(0, count)
+    };
   }
 
-  // Get available filter options
   getFilterOptions() {
     return {
       cuisineTypes: [
