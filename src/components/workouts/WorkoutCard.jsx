@@ -1,8 +1,9 @@
 import ActionButton from '../ui/ActionButton';
+import './WorkoutCard.css';
 
 const WorkoutCard = ({ workout, onViewDetails }) => (
   <li className="session-item">
-    <div>
+    <div className="session-content">
       <p className="session-title">{workout.title}</p>
       <p className="session-meta">
         {workout.time} - {workout.type}
