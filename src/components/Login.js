@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import ActionButton from './ui/ActionButton';
 import FormField from './ui/FormField';
-import '../styles/Login.css';
+import './Login.css';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -80,7 +80,7 @@ const Login = () => {
 
       <main className="login-main">
         <div className="login-card">
-          <div className="card-header">
+          <div className="login-card-header">
             <div className="card-logo">
               <img
                 src="/images/planet-fitness-logo.png"
