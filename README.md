@@ -1,60 +1,67 @@
-# Fitness Planet<img width="444" height="530" alt="image" src="https://github.com/user-attachments/assets/e3d7b4ab-a40d-4a7d-9709-edcd836ce880" />
+# Fitness Planet
 
-
-Een Nederlandstalige React-app voor het plannen van maaltijden, het volgen van workouts en het beheren van je voedingsdoelen. De applicatie combineert een overzichtelijke dashboardervaring met receptenzoekopdrachten via de Edamam API en biedt hulpmiddelen voor wekelijkse mealplanning en voortgangsrapportage.
+Een Nederlandstalige React-app voor het plannen van maaltijden, het volgen van workouts en het beheren van voedingsdoelen. De applicatie gebruikt de Edamam Recipe Search API v2 voor externe receptdata.
 
 ## Functies
-- **Authenticatie en sessiebeheer:** Inloggen, registreren en uitloggen via de `AuthContext`, inclusief sessieherstel op basis van opgeslagen tokens.
-- **Dashboardoverzicht:** Snelle inzage in dagelijkse calorieën, workouts, waterinname en slaapgegevens, plus welkomstbericht op basis van de aangemelde gebruiker.
-- **Workout- en voedingstrackers:** Pagina's voor het plannen van trainingen en het bijhouden van voedingsinname, volledig in het Nederlands.
-- **Recepten en maaltijdplanning:** Zoek recepten via de Edamam API, beheer favorieten en plan gerechten per dag en maaltijdtype met calorie totalen per dag en week.
-- **Progressie en profiel:** Bekijk voortgangspagina's en beheer persoonlijke instellingen zoals wachtwoordwijzigingen en notificatievoorkeuren.
+- Authenticatie en sessiebeheer via `AuthContext`.
+- Dashboard, workouts, voeding, recepten, mealplanning, progressie en profiel.
+- Recepten zoeken via Edamam met loading, error en empty states in de UI.
+- Favorieten en opgeslagen recepten blijven lokaal opgeslagen.
 
 ## Installatie
-1. Zorg dat Node.js en npm zijn geïnstalleerd.
-2. Installeer de dependencies:
+1. Installeer de dependencies:
    ```bash
    npm install
    ```
-3. Kopieer de voorbeeldconfiguratie en vul de waarden aan:
+2. Kopieer de voorbeeldconfiguratie:
    ```bash
    cp .env.example .env
    ```
-   Vul de Edamam API-sleutels (`REACT_APP_EDAMAM_APP_ID`, `REACT_APP_EDAMAM_APP_KEY`) en eventuele andere waarden naar wens in.
-4. Start de ontwikkelserver:
+3. Vul minimaal deze Edamam-waarden in:
+   ```bash
+   VITE_EDAMAM_APP_ID=your_edamam_app_id_here
+   VITE_EDAMAM_APP_KEY=your_edamam_app_key_here
+   ```
+4. Start de app:
    ```bash
    npm start
    ```
-   De app is bereikbaar op `http://localhost:3000`.
 
 ## Beschikbare scripts
-- `npm start` — Start de ontwikkelserver met hot reloading.
-- `npm test` — Voert de test-suite uit.
-- `npm run build` — Maakt een geoptimaliseerde productie-build.
-- `npm run eject` — Maakt alle configuratiebestanden zichtbaar (niet omkeerbaar).
+- `npm start` - Start de Vite ontwikkelserver.
+- `npm run dev` - Start de Vite ontwikkelserver.
+- `npm run build` - Maakt een productiebuild.
+- `npm run preview` - Previewt de productiebuild.
 
 ## Projectstructuur
-- `src/App.js` — Routering en beschermde routes voor ingelogde gebruikers.
-- `src/contexts/` — Context-providers voor authenticatie, recepten en maaltijdplanning.
-- `src/components/` — UI-componenten zoals dashboard, trackers, receptenzoeker en profielpagina's.
-- `src/services/` — API-clients, waaronder de Edamam-service voor recepten en voeding.
-- `public/` — Statische assets en HTML-template.
+- `src/main.jsx` - Rendert de React-app.
+- `src/App.jsx` - Centrale app-structuur.
+- `src/routes/` - Routing, dynamic routes en protected routes.
+- `src/contexts/` - Context-providers voor authenticatie, recepten en mealplanning.
+- `src/services/edamamService.js` - Centrale Edamam API-laag.
+- `src/components/` en `src/pages/` - Herbruikbare componenten en pagina's.
 
-## Omgevingsvariabelen
-Alle configuratie gebeurt via `.env`. De belangrijkste velden staan in `.env.example` en omvatten de Edamam-API-gegevens, app-naam, versie en feature-vlaggen. Voeg je eigen waarden toe voordat je de app draait of bouwt.
+## Edamam API
+De app gebruikt geen hardcoded Edamam keys. De service leest credentials via Vite:
 
-## Inloggen
-Voor snelle toegang kun je het al voor geprogrammeerde demoaccount gebruiken:
+```bash
+VITE_EDAMAM_APP_ID=...
+VITE_EDAMAM_APP_KEY=...
+VITE_EDAMAM_BASE_URL=https://api.edamam.com
+```
 
-- **Email:** `demo@fitnessplanet.com`
-- **Wachtwoord:** `demo123`
+In `src/services/edamamService.js` staan de externe async API-functies die meetellen voor criterium 3.4:
+- `searchRecipes(query, filters)`
+- `getRecipesByDiet(diet)`
+- `getRecipesByMealType(mealType)`
+- `getRecipesByHealthLabel(healthLabel)`
+- `getHighProteinRecipes()`
+- `getLowCalorieRecipes()`
+- `getRecipeDetails(recipeUrlOrUri)`
+- `getNextRecipesPage(nextUrl)`
 
-De demo login werkt via de NOVI-backend.
+De receptenpagina toont loading, error, retry en empty states wanneer externe data wordt opgehaald.
 
-## Recepten zoeken & filteren en favoriet(en) toevoegen
-
-Dit is mogelijk helaas werkt het via een gratis API van Edamam waardoor je maar een hit hebt per minuut en deze gebruik je al op het moment van inladen van de recepten, zodra je zou betalen voor de API dan zou je ook kunnen zoeken, filteren en verschillende favoriete recepten toevoegen. Dit heb ik niet aangeschaft omdat het voor een school project geprogrammeerd is.
-
-## Automatisch weekmenu
-
-Dit word automatisch gegeneerd, echter is dit voor het demo account ingesteld op onderhoud 2000 kcal. Helaas, werkt dit alleen per dag omdat het week menu 7 avondmaaltijden zou moeten inladen en dit is niet mogelijk met de gratis API.
+## Demo login
+- Email: `demo@fitnessplanet.com`
+- Wachtwoord: `demo123`
