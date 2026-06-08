@@ -2,7 +2,16 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { notificationService } from '../utils/notificationService';
 import { useAuth } from '../contexts/AuthContext';
+import ActionButton from './ui/ActionButton';
+import FormField from './ui/FormField';
 import '../styles/Auth.css';
+
+const registerFields = [
+  { id: 'name', label: 'Naam', placeholder: 'Voer je naam in' },
+  { id: 'email', label: 'E-mailadres', type: 'email', placeholder: 'Voer je e-mailadres in' },
+  { id: 'password', label: 'Wachtwoord', type: 'password', placeholder: 'Voer een wachtwoord in' },
+  { id: 'confirmPassword', label: 'Bevestig wachtwoord', type: 'password', placeholder: 'Bevestig je wachtwoord' }
+];
 
 const Register = () => {
   const navigate = useNavigate();
@@ -99,69 +108,25 @@ const Register = () => {
         </p>
 
         <form onSubmit={handleSubmit} className="auth-form">
-          <div className="form-group">
-            <label htmlFor="name">Naam</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
+          {registerFields.map((field) => (
+            <FormField
+              key={field.id}
+              id={field.id}
+              label={field.label}
+              type={field.type || 'text'}
+              value={formData[field.id]}
+              placeholder={field.placeholder}
+              error={errors[field.id]}
               onChange={handleChange}
-              placeholder="Voer je naam in"
-              className={errors.name ? 'error' : ''}
             />
-            {errors.name && <span className="error-text">{errors.name}</span>}
-          </div>
+          ))}
 
-          <div className="form-group">
-            <label htmlFor="email">E-mailadres</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Voer je e-mailadres in"
-              className={errors.email ? 'error' : ''}
-            />
-            {errors.email && <span className="error-text">{errors.email}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Wachtwoord</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Voer een wachtwoord in"
-              className={errors.password ? 'error' : ''}
-            />
-            {errors.password && <span className="error-text">{errors.password}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Bevestig wachtwoord</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              placeholder="Bevestig je wachtwoord"
-              className={errors.confirmPassword ? 'error' : ''}
-            />
-            {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
-          </div>
-
-          <button
+          <ActionButton
             type="submit"
             className="auth-button"
             disabled={loading}
-          >
-            {loading ? 'Bezig met registreren...' : 'Registreren'}
-          </button>
+            label={loading ? 'Bezig met registreren...' : 'Registreren'}
+          />
         </form>
 
         <div className="auth-links">
