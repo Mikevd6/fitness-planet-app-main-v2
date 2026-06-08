@@ -16,7 +16,9 @@ const Header = () => {
     }
   };
 
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path) => (
+    location.pathname === path || location.pathname.startsWith(`${path}/`)
+  );
   const linkClass = (path) => `nav-link ${isActive(path) ? 'active' : ''}`;
   const navClass = `nav ${menuOpen ? 'nav-open' : ''}`;
   const toggleMenu = () => setMenuOpen((open) => !open);
