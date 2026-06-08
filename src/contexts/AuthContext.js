@@ -1,7 +1,6 @@
-﻿import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useReducer } from 'react';
 import { noviAuthService } from '../services/noviAuthService';
 
-// Initial state
 const initialState = {
   user: null,
   token: null,
@@ -10,7 +9,6 @@ const initialState = {
   error: null
 };
 
-// Action types
 const AUTH_ACTIONS = {
   LOGIN_START: 'LOGIN_START',
   LOGIN_SUCCESS: 'LOGIN_SUCCESS',
@@ -24,7 +22,6 @@ const AUTH_ACTIONS = {
   RESTORE_SESSION: 'RESTORE_SESSION'
 };
 
-// Reducer function
 const authReducer = (state, action) => {
   switch (action.type) {
     case AUTH_ACTIONS.LOGIN_START:
@@ -100,34 +97,32 @@ const authReducer = (state, action) => {
   }
 };
 
-// Create context
 const AuthContext = createContext();
 
-// Auth provider component
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Restore session on app load
   useEffect(() => {
-    const restoreSession = async () => {
+    const restoreSession = () => {
       try {
-        if (noviAuthService.isAuthenticated()) {
-          const user = noviAuthService.getCurrentUser();
-          const token = noviAuthService.getToken();
-
-          if (user) {
-            dispatch({
-              type: AUTH_ACTIONS.RESTORE_SESSION,
-              payload: { user, token }
-            });
-          } else {
-            dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: { loading: false } });
-          }
-        } else {
+        if (!noviAuthService.isAuthenticated()) {
           dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: { loading: false } });
+          return;
         }
-      } catch (error) {
-        console.error('Session restoration failed:', error);
+
+        const user = noviAuthService.getCurrentUser();
+        const token = noviAuthService.getToken();
+
+        if (user) {
+          dispatch({
+            type: AUTH_ACTIONS.RESTORE_SESSION,
+            payload: { user, token }
+          });
+          return;
+        }
+
+        dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: { loading: false } });
+      } catch {
         dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: { loading: false } });
       }
     };
@@ -135,13 +130,12 @@ export const AuthProvider = ({ children }) => {
     restoreSession();
   }, []);
 
-  // Login function
   const login = async (credentials) => {
     dispatch({ type: AUTH_ACTIONS.LOGIN_START });
-    
+
     try {
       const result = await noviAuthService.login(credentials);
-      
+
       if (result.success) {
         dispatch({
           type: AUTH_ACTIONS.LOGIN_SUCCESS,
@@ -152,6 +146,8 @@ export const AuthProvider = ({ children }) => {
         });
         return { success: true };
       }
+
+      return { success: false, error: 'Inloggen mislukt.' };
     } catch (error) {
       dispatch({
         type: AUTH_ACTIONS.LOGIN_FAILURE,
@@ -161,17 +157,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Register function
   const register = async (userData) => {
     dispatch({ type: AUTH_ACTIONS.REGISTER_START });
-    
+
     try {
       const result = await noviAuthService.register(userData);
-      
+
       if (result.success) {
         dispatch({ type: AUTH_ACTIONS.REGISTER_SUCCESS });
         return { success: true, message: result.message };
       }
+
+      return { success: false, error: 'Registratie mislukt.' };
     } catch (error) {
       dispatch({
         type: AUTH_ACTIONS.REGISTER_FAILURE,
@@ -181,39 +178,29 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Logout function
   const logout = () => {
     noviAuthService.logout();
     dispatch({ type: AUTH_ACTIONS.LOGOUT });
   };
 
-  // Clear error function
   const clearError = () => {
     dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
   };
 
-  // Context value
-  const value = {
-    ...state,
-    login,
-    register,
-    logout,
-    clearError
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ ...state, login, register, logout, clearError }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Custom hook to use auth context
 export const useAuth = () => {
   const context = useContext(AuthContext);
+
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
+
   return context;
 };
 
