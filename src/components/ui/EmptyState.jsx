@@ -1,4 +1,5 @@
 import ActionButton from './ActionButton';
+import './EmptyState.css';
 
 const EmptyState = ({ icon, title, message, actionLabel, onAction, className = 'empty-state' }) => (
   <div className={className}>
