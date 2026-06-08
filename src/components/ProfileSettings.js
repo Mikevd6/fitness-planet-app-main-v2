@@ -3,7 +3,7 @@ import { notificationService } from '../utils/notificationService';
 import { getSavedRecipes, saveSavedRecipes } from '../utils/recipeStorage';
 import PageHeader from './ui/PageHeader';
 import SavedRecipeList from './profile/SavedRecipeList';
-import '../styles/ProfileSettings.css';
+import './ProfileSettings.css';
 
 const ProfileSettings = () => {
   const [savedRecipes, setSavedRecipes] = useState([]);
