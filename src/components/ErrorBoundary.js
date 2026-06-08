@@ -2,38 +2,28 @@ import React, { Component } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { withErrorHandling } from '../utils/errorHandling';
 
-/**
- * ErrorBoundary - Vangt fouten in componenten op en toont een fallback UI
- */
 class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
-    this.state = { 
+    this.state = {
       hasError: false,
       error: null,
       errorInfo: null
     };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError() {
     return { hasError: true };
   }
 
   componentDidCatch(error, errorInfo) {
-    this.setState({
-      error: error,
-      errorInfo: errorInfo
-    });
-    
-    // Log naar error tracking service of console
-    console.error('ErrorBoundary caught error:', error, errorInfo);
-    
-    // Gebruik onze error handling utility
+    this.setState({ error, errorInfo });
+
     withErrorHandling(() => {
       throw error;
-    }, { 
+    }, {
       context: this.props.componentName || 'ErrorBoundary',
-      silent: true // We laten de ErrorBoundary de UI afhandelen
+      silent: true
     })();
   }
 
@@ -44,22 +34,20 @@ class ErrorBoundary extends Component {
 
   render() {
     const { fallback, children } = this.props;
-    
+
     if (this.state.hasError) {
-      // Toon aangepaste fallback component indien aanwezig
       if (fallback) {
-        return React.cloneElement(fallback, { 
+        return React.cloneElement(fallback, {
           error: this.state.error,
           resetError: () => this.setState({ hasError: false, error: null, errorInfo: null })
         });
       }
-      
-      // Standaard error UI
+
       return (
         <div className="error-boundary">
           <h2>Er is iets misgegaan</h2>
           <p>
-            Er is een onverwachte fout opgetreden. Probeer de pagina te vernieuwen of 
+            Er is een onverwachte fout opgetreden. Probeer de pagina te vernieuwen of
             ga terug naar de startpagina.
           </p>
           <div className="error-actions">
@@ -76,8 +64,8 @@ class ErrorBoundary extends Component {
               Naar startpagina
             </button>
           </div>
-          
-          {process.env.NODE_ENV === 'development' && (
+
+          {import.meta.env.DEV && (
             <details className="error-details">
               <summary>Technische details</summary>
               <pre>{this.state.error && this.state.error.toString()}</pre>
