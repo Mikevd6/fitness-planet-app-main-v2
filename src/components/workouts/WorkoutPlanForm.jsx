@@ -1,5 +1,6 @@
 import ActionButton from '../ui/ActionButton';
 import FormField from '../ui/FormField';
+import './WorkoutPlanForm.css';
 
 const WorkoutPlanForm = ({ formValues, onFieldChange, onSubmit }) => (
   <div className="panel form-panel">
