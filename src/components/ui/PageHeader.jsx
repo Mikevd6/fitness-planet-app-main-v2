@@ -1,3 +1,5 @@
+import './PageHeader.css';
+
 const PageHeader = ({
   kicker,
   title,
