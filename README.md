@@ -60,6 +60,7 @@ In `src/services/edamamService.js` staan de externe async API-functies die meete
 - `getRecipeDetails(recipeUrlOrUri)`
 - `getNextRecipesPage(nextUrl)`
 
+
 De receptenpagina toont loading, error, retry en empty states wanneer externe data wordt opgehaald.
 
 ## Demo login
