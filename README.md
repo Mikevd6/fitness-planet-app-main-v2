@@ -17,8 +17,9 @@ Een Nederlandstalige React-app voor het plannen van maaltijden, het volgen van w
    ```bash
    cp .env.example .env
    ```
-3. Vul minimaal deze Edamam-waarden in:
+3. Vul de NOVI-project-ID en de Edamam-waarden in:
    ```bash
+   VITE_NOVI_PROJECT_ID=your_novi_project_id_here
    VITE_EDAMAM_APP_ID=your_edamam_app_id_here
    VITE_EDAMAM_APP_KEY=your_edamam_app_key_here
    ```
@@ -62,6 +63,11 @@ In `src/services/edamamService.js` staan de externe async API-functies die meete
 
 
 De receptenpagina toont loading, error, retry en empty states wanneer externe data wordt opgehaald.
+
+## NOVI-API
+De nieuwe backend gebruikt `https://novi-backend-api-wgsgz.ondigitalocean.app/api`. Bij elk verzoek stuurt de app de waarde van `VITE_NOVI_PROJECT_ID` mee als `novi-education-project-id` header. Inloggen gebruikt `POST /api/login` met `email` en `password`; het teruggegeven JWT-token wordt bij beveiligde verzoeken als Bearer-token gebruikt. De project-ID staat bewust niet in de repository. Kopieer `.env.example` naar `.env` en vul je eigen ID in. Vite bouwt `VITE_`-variabelen in de browsercode in: behandel de project-ID als een clientidentificatie, niet als een geheim dat door de frontend kan worden beschermd.
+
+De projectomgeving moet bij NOVI zijn geactiveerd en met een JSON-configuratie zijn ingericht. Volgens de Swagger-specificatie mag alleen een beheerder gebruikers toevoegen. Daarom toont de openbare registratiepagina nu een duidelijke uitleg in plaats van een formulier dat op een 401/403-fout uitloopt.
 
 ## Demo login
 - Email: `demo@fitnessplanet.com`

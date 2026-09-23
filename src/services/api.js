@@ -2,10 +2,8 @@ import axios from 'axios';
 import { notifyUnauthorized } from '../utils/authEvents';
 
 const env = import.meta.env;
-const noviApiHost = (env.VITE_NOVI_API_HOST || 'https://api.datavortex.nl').replace(/\/$/, '');
-const noviRealm = env.VITE_NOVI_REALM || 'fitnessplanet';
-const baseURL = env.VITE_NOVI_API_URL || `${noviApiHost}/${noviRealm}`;
-const noviApiKey = env.VITE_NOVI_API_KEY;
+const baseURL = (env.VITE_NOVI_API_URL || 'https://novi-backend-api-wgsgz.ondigitalocean.app/api').replace(/\/$/, '');
+const projectId = env.VITE_NOVI_PROJECT_ID?.trim();
 
 const apiClient = axios.create({
   baseURL,
@@ -18,14 +16,15 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (!projectId) {
+      return Promise.reject(new Error('NOVI Project ID ontbreekt. Vul VITE_NOVI_PROJECT_ID in je .env-bestand in.'));
     }
 
-    if (noviApiKey) {
-      config.headers['X-Api-Key'] = noviApiKey;
+    config.headers['novi-education-project-id'] = projectId;
+
+    const token = localStorage.getItem('token');
+    if (token && config.url !== '/login' && token !== 'demo-token') {
+      config.headers.Authorization = `Bearer ${token}`;
     }
 
     return config;
@@ -36,11 +35,10 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && error.config?.url !== '/login') {
       localStorage.removeItem('token');
       notifyUnauthorized();
     }
-
     return Promise.reject(error);
   }
 );
