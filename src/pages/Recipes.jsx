@@ -3,7 +3,7 @@ import { useRecipes } from '../contexts/RecipeContext';
 import { storage } from '../utils/localStorage';
 import { notificationService } from '../utils/notificationService';
 import { getSavedRecipes, saveSavedRecipes } from '../utils/recipeStorage';
-import '../styles/RecipeSearch.css';
+import './Recipes.css';
 
 const initialFilters = {
   cuisineType: '',

@@ -35,6 +35,8 @@ Een Nederlandstalige React-app voor het plannen van maaltijden, het volgen van w
 - `npm run preview` - Previewt de productiebuild.
 
 ## Projectstructuur
+De actieve schermcomponenten en context-providers met JSX hebben een `.jsx`-extensie. Componentgebonden CSS staat naast de bijbehorende component; algemene tokens en opmaak staan in `src/index.css` en `src/App.css`.
+
 - `src/main.jsx` - Rendert de React-app.
 - `src/App.jsx` - Centrale app-structuur.
 - `src/routes/` - Routing, dynamic routes en protected routes.
