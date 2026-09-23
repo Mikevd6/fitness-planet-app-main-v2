@@ -1,5 +1,5 @@
 import React from 'react';
-import '../styles/NutritionTracker.css';
+import './NutritionTracker.css';
 
 const NutritionTracker = () => {
   const macros = [

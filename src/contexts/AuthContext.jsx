@@ -50,7 +50,6 @@ const authReducer = (state, action) => {
       };
 
     case AUTH_ACTIONS.LOGIN_FAILURE:
-    case AUTH_ACTIONS.REGISTER_FAILURE:
       return {
         ...state,
         user: null,
@@ -59,6 +58,9 @@ const authReducer = (state, action) => {
         loading: false,
         error: action.payload.error
       };
+
+    case AUTH_ACTIONS.REGISTER_FAILURE:
+      return { ...state, loading: false, error: action.payload.error };
 
     case AUTH_ACTIONS.LOGOUT:
       return {
