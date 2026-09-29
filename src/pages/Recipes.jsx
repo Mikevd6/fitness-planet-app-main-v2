@@ -117,11 +117,11 @@ const Recipes = () => {
   const initialRecipesRequested = useRef(false);
 
   useEffect(() => {
-    let active = true;
-    noviDataService.favoriteRecipes.list()
-      .then((items) => { if (active) setFavoriteRecipes(items); })
-      .catch((error) => { if (active) notificationService.warning('Favorieten niet geladen', error.message); });
-    return () => { active = false; };
+    const controller = new AbortController();
+    noviDataService.favoriteRecipes.list({ signal: controller.signal })
+      .then((items) => { if (!controller.signal.aborted) setFavoriteRecipes(items); })
+      .catch((error) => { if (!controller.signal.aborted) notificationService.warning('Favorieten niet geladen', error.message); });
+    return () => controller.abort();
   }, [user?.id]);
 
   useEffect(() => {

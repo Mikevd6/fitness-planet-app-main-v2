@@ -34,13 +34,13 @@ const WorkoutTracker = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let active = true;
+    const controller = new AbortController();
     setLoading(true);
-    noviDataService.workouts.list()
-      .then((items) => { if (active) setSavedWorkouts(items); })
-      .catch((error) => { if (active) setFormError(error.message); })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
+    noviDataService.workouts.list({ signal: controller.signal })
+      .then((items) => { if (!controller.signal.aborted) setSavedWorkouts(items); })
+      .catch((error) => { if (!controller.signal.aborted) setFormError(error.message); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
   }, [user?.id]);
   const workouts = [...savedWorkouts, ...workoutSessions];
   const totalMinutes = savedWorkouts.reduce((total, workout) => total + (Number.parseInt(workout.duration, 10) || 0), 0);

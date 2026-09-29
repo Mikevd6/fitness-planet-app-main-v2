@@ -17,12 +17,12 @@ const WorkoutDetail = () => {
 
   useEffect(() => {
     if (example) return undefined;
-    let active = true;
-    noviDataService.workouts.list()
-      .then((items) => { if (active) setWorkout(items.find((item) => String(item.id) === id) || null); })
-      .catch(() => { if (active) setWorkout(null); })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
+    const controller = new AbortController();
+    noviDataService.workouts.list({ signal: controller.signal })
+      .then((items) => { if (!controller.signal.aborted) setWorkout(items.find((item) => String(item.id) === id) || null); })
+      .catch(() => { if (!controller.signal.aborted) setWorkout(null); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
   }, [id, example]);
 
   if (loading) return <p role="status">Workout laden...</p>;

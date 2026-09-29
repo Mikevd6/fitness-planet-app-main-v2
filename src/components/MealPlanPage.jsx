@@ -37,18 +37,21 @@ const MealPlanPage = () => {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    let active = true;
-    Promise.all([noviDataService.mealPlans.list(), noviDataService.favoriteRecipes.list()])
+    const controller = new AbortController();
+    Promise.all([
+      noviDataService.mealPlans.list({ signal: controller.signal }),
+      noviDataService.favoriteRecipes.list({ signal: controller.signal })
+    ])
       .then(([plans, favorites]) => {
-        if (!active) return;
+        if (controller.signal.aborted) return;
         setEntries(plans.filter((item) => Object.values(weekDates).includes(item.date?.slice(0, 10))));
         setSavedRecipes(favorites.map((item) => ({
           id: item.id, uri: item.recipeUri, title: item.title, image: item.imageUrl
         })));
       })
-      .catch((failure) => { if (active) setError(failure.response?.data?.message || failure.message); })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
+      .catch((failure) => { if (!controller.signal.aborted) setError(failure.response?.data?.message || failure.message); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
   }, [user?.id, weekDates]);
 
   const weekMenu = Object.fromEntries(days.map(([key]) => [key, Object.fromEntries(

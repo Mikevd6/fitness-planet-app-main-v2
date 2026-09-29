@@ -17,8 +17,8 @@ const asList = (data) => {
 };
 
 const collection = (name) => ({
-  async list() {
-    const response = await apiClient.get(`/users/${userId()}/${name}`);
+  async list({ signal } = {}) {
+    const response = await apiClient.get(`/users/${userId()}/${name}`, { signal });
     return asList(response.data);
   },
   async create(values) {

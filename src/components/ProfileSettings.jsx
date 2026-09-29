@@ -13,12 +13,12 @@ const ProfileSettings = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let active = true;
-    noviDataService.favoriteRecipes.list()
-      .then((items) => { if (active) setSavedRecipes(items); })
-      .catch((failure) => { if (active) setError(failure.response?.data?.message || failure.message); })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
+    const controller = new AbortController();
+    noviDataService.favoriteRecipes.list({ signal: controller.signal })
+      .then((items) => { if (!controller.signal.aborted) setSavedRecipes(items); })
+      .catch((failure) => { if (!controller.signal.aborted) setError(failure.response?.data?.message || failure.message); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
   }, [user?.id]);
 
   const removeSavedRecipe = async (id) => {
