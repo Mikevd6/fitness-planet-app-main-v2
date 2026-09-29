@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRecipes } from '../contexts/RecipeContext';
 import { storage } from '../utils/localStorage';
 import { notificationService } from '../utils/notificationService';
@@ -114,6 +114,7 @@ const Recipes = () => {
   const [lastRequest, setLastRequest] = useState(null);
   const [savedRecipes, setSavedRecipes] = useState([]);
   const [favoriteRecipes, setFavoriteRecipes] = useState([]);
+  const initialRecipesRequested = useRef(false);
 
   useEffect(() => {
     setSavedRecipes(getSavedRecipes());
@@ -121,6 +122,9 @@ const Recipes = () => {
   }, []);
 
   useEffect(() => {
+    if (initialRecipesRequested.current) return;
+    initialRecipesRequested.current = true;
+
     const loadInitialRecipes = async () => {
       const result = await getHighProteinRecipes();
 
