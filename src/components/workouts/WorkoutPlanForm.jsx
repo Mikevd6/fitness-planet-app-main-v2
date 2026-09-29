@@ -2,7 +2,7 @@ import ActionButton from '../ui/ActionButton';
 import FormField from '../ui/FormField';
 import './WorkoutPlanForm.css';
 
-const WorkoutPlanForm = ({ formValues, onFieldChange, onSubmit }) => (
+const WorkoutPlanForm = ({ formValues, onFieldChange, onSubmit, error }) => (
   <div className="panel form-panel">
     <div className="panel-header">
       <p className="panel-kicker">Nieuwe Workout</p>
@@ -10,6 +10,15 @@ const WorkoutPlanForm = ({ formValues, onFieldChange, onSubmit }) => (
     </div>
     <form className="workout-form" onSubmit={onSubmit}>
       <div className="form-row">
+        <FormField
+          id="duration"
+          label="Duur (minuten)"
+          type="number"
+          value={formValues.duration}
+          onChange={onFieldChange}
+          placeholder="Bijv. 45"
+          required
+        />
         <FormField
           id="type"
           label="Type"
@@ -55,9 +64,9 @@ const WorkoutPlanForm = ({ formValues, onFieldChange, onSubmit }) => (
       />
 
       <div className="form-actions">
-        <ActionButton className="pill secondary" label="Opslaan en plannen" onClick={onSubmit} />
         <ActionButton type="submit" className="pill" label="Toevoegen" />
       </div>
+      {error && <p role="alert" className="error-message">{error}</p>}
     </form>
   </div>
 );

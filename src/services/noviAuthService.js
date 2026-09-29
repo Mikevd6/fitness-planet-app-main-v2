@@ -64,7 +64,7 @@ export const noviAuthService = {
       throw new Error('Vul zowel je e-mailadres als wachtwoord in.');
     }
 
-    if (shouldUseDemoBackend || isDemoCredential(email, password)) {
+    if (shouldUseDemoBackend && isDemoCredential(email, password)) {
       return demoLogin({ email });
     }
 

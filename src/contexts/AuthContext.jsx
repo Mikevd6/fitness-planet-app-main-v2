@@ -25,12 +25,14 @@ const AUTH_ACTIONS = {
 const authReducer = (state, action) => {
   switch (action.type) {
     case AUTH_ACTIONS.LOGIN_START:
-    case AUTH_ACTIONS.REGISTER_START:
       return {
         ...state,
         loading: true,
         error: null
       };
+
+    case AUTH_ACTIONS.REGISTER_START:
+      return { ...state, error: null };
 
     case AUTH_ACTIONS.LOGIN_SUCCESS:
       return {

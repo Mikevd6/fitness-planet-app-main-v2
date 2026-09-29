@@ -4,6 +4,7 @@ import PublicRoute from './PublicRoute';
 import Dashboard from '../pages/Dashboard';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
+import AdminUserCreate from '../components/AdminUserCreate';
 import Workouts from '../pages/Workouts';
 import WorkoutDetail from '../pages/WorkoutDetail';
 import Nutrition from '../pages/Nutrition';
@@ -24,6 +25,7 @@ const AppRoutes = () => (
       <Route path="maaltijdplan" element={<MealPlan />} />
       <Route path="voortgang" element={<Progress />} />
       <Route path="profiel" element={<Profile />} />
+      <Route path="gebruikers-aanmaken" element={<AdminUserCreate />} />
     </Route>
 
     <Route path="login" element={<PublicRoute><Login /></PublicRoute>} />

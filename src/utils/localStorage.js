@@ -151,8 +151,10 @@ const storage = {
   saveWeekMenu: function(weekMenu) {
     try {
       localStorage.setItem('fitnessplanet_weekmenu', JSON.stringify(weekMenu));
+      return true;
     } catch (error) {
       console.error('Error saving week menu to localStorage:', error);
+      return false;
     }
   },
 

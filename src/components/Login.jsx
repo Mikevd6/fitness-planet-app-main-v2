@@ -138,11 +138,13 @@ const Login = () => {
             </p>
           </div>
 
-          <div className="demo-credentials">
-            <h3>Demo Account</h3>
-            <p>Email: demo@fitnessplanet.com</p>
-            <p>Password: demo123</p>
-          </div>
+          {import.meta.env.VITE_USE_DEMO_BACKEND === 'true' && (
+            <div className="demo-credentials">
+              <h3>Demo Account</h3>
+              <p>Email: demo@fitnessplanet.com</p>
+              <p>Password: demo123</p>
+            </div>
+          )}
         </div>
       </main>
     </div>

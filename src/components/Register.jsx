@@ -9,7 +9,7 @@ const Register = () => (
       <p className="auth-description">
         De nieuwe NOVI-API laat alleen een ingelogde beheerder gebruikers aanmaken.
         Zelf registreren met dit formulier is daarom niet beschikbaar.
-        Vraag de beheerder van dit NOVI-project om een account, of probeer de demo-inlog.
+        Vraag de beheerder van dit NOVI-project om een account.
       </p>
       <div className="auth-links">
         <Link to="/login">Terug naar inloggen</Link>

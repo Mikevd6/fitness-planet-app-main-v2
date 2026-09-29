@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { workoutSessions } from '../data/workouts';
+import { storage } from '../utils/localStorage';
 import ActionButton from './ui/ActionButton';
 import PageHeader from './ui/PageHeader';
 import ExerciseList from './workouts/ExerciseList';
@@ -10,7 +11,8 @@ import './WorkoutDetail.css';
 const WorkoutDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const workout = workoutSessions.find((session) => session.id === id);
+  const workout = [...storage.getWorkouts(), ...workoutSessions]
+    .find((session) => String(session.id) === id);
 
   if (!workout) {
     return <Navigate to="/workouts" replace />;
@@ -20,7 +22,7 @@ const WorkoutDetail = () => {
     { label: 'Type', value: workout.type },
     { label: 'Duur', value: workout.duration },
     { label: 'Intensiteit', value: workout.intensity },
-    { label: 'Calorieen', value: workout.calories }
+    { label: 'Datum', value: workout.time }
   ];
 
   return (
@@ -55,7 +57,7 @@ const WorkoutDetail = () => {
           />
         </section>
 
-        <ExerciseList exercises={workout.exercises} />
+        {workout.exercises?.length > 0 && <ExerciseList exercises={workout.exercises} />}
       </div>
     </div>
   );
