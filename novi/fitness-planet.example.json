@@ -1,0 +1,230 @@
+{
+  "collections": [
+    {
+      "name": "workouts",
+      "fields": [
+        {
+          "name": "id",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": "reference:users",
+          "required": true
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": true,
+          "min": 2,
+          "max": 120
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": true,
+          "min": 2,
+          "max": 60
+        },
+        {
+          "name": "intensity",
+          "type": "string",
+          "required": true,
+          "min": 2,
+          "max": 30
+        },
+        {
+          "name": "date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "time",
+          "type": "string",
+          "required": true,
+          "min": 4,
+          "max": 5
+        },
+        {
+          "name": "duration",
+          "type": "number",
+          "required": true,
+          "min": 1
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false,
+          "max": 1000
+        }
+      ],
+      "permissions": {
+        "GET": [
+          "user",
+          "admin"
+        ],
+        "POST": [
+          "user",
+          "admin"
+        ],
+        "PUT": [
+          "user",
+          "admin"
+        ],
+        "PATCH": [
+          "user",
+          "admin"
+        ],
+        "DELETE": [
+          "user",
+          "admin"
+        ]
+      }
+    },
+    {
+      "name": "favorite_recipes",
+      "fields": [
+        {
+          "name": "id",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": "reference:users",
+          "required": true
+        },
+        {
+          "name": "recipeUri",
+          "type": "string",
+          "required": true,
+          "min": 4,
+          "max": 1000
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": true,
+          "min": 2,
+          "max": 255
+        },
+        {
+          "name": "imageUrl",
+          "type": "string",
+          "required": false,
+          "max": 2000
+        },
+        {
+          "name": "sourceUrl",
+          "type": "string",
+          "required": false,
+          "max": 2000
+        },
+        {
+          "name": "calories",
+          "type": "number",
+          "required": false,
+          "min": 0
+        }
+      ],
+      "permissions": {
+        "GET": [
+          "user",
+          "admin"
+        ],
+        "POST": [
+          "user",
+          "admin"
+        ],
+        "PUT": [
+          "user",
+          "admin"
+        ],
+        "PATCH": [
+          "user",
+          "admin"
+        ],
+        "DELETE": [
+          "user",
+          "admin"
+        ]
+      }
+    },
+    {
+      "name": "meal_plans",
+      "fields": [
+        {
+          "name": "id",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": "reference:users",
+          "required": true
+        },
+        {
+          "name": "date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "mealType",
+          "type": "string",
+          "required": true,
+          "min": 2,
+          "max": 40
+        },
+        {
+          "name": "recipeUri",
+          "type": "string",
+          "required": true,
+          "min": 4,
+          "max": 1000
+        },
+        {
+          "name": "recipeTitle",
+          "type": "string",
+          "required": true,
+          "min": 2,
+          "max": 255
+        },
+        {
+          "name": "imageUrl",
+          "type": "string",
+          "required": false,
+          "max": 2000
+        }
+      ],
+      "permissions": {
+        "GET": [
+          "user",
+          "admin"
+        ],
+        "POST": [
+          "user",
+          "admin"
+        ],
+        "PUT": [
+          "user",
+          "admin"
+        ],
+        "PATCH": [
+          "user",
+          "admin"
+        ],
+        "DELETE": [
+          "user",
+          "admin"
+        ]
+      }
+    }
+  ],
+  "users": [],
+  "data": {
+    "workouts": [],
+    "favorite_recipes": [],
+    "meal_plans": []
+  }
+}

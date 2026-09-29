@@ -16,6 +16,15 @@ const tokenIsValid = (token) => {
   }
 };
 
+const tokenUserId = (token) => {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return Number(payload.userId) || null;
+  } catch {
+    return null;
+  }
+};
+
 const persistUser = (user, token) => {
   const data = {
     ...user,
@@ -75,7 +84,8 @@ export const noviAuthService = {
         throw new Error('De NOVI-API gaf geen geldig token of gebruikersprofiel terug.');
       }
 
-      const persisted = persistUser(user, token);
+      // NOVI's login response omits the id; the signed JWT contains userId.
+      const persisted = persistUser({ ...user, id: user.id || tokenUserId(token) }, token);
       return { success: true, user: persisted, token };
     } catch (error) {
       if (error.response?.status === 401) {

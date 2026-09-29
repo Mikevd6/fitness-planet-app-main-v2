@@ -6,7 +6,7 @@ Een Nederlandstalige React-app voor het plannen van maaltijden, het volgen van w
 - Authenticatie en sessiebeheer via `AuthContext`.
 - Dashboard, workouts, voeding, recepten, mealplanning, progressie en profiel.
 - Recepten zoeken via Edamam met loading, error en empty states in de UI.
-- Favorieten en opgeslagen recepten blijven lokaal opgeslagen.
+- Workouts, opgeslagen favoriete recepten en de handmatige weekplanning worden via NOVI opgeslagen. Andere oude schermen gebruiken nog browseropslag.
 
 ## Installatie
 1. Installeer de dependencies:
@@ -42,6 +42,7 @@ De actieve schermcomponenten en context-providers met JSX hebben een `.jsx`-exte
 - `src/routes/` - Routing, dynamic routes en protected routes.
 - `src/contexts/` - Context-providers voor authenticatie, recepten en mealplanning.
 - `src/services/edamamService.js` - Centrale Edamam API-laag.
+- `src/services/noviDataService.js` - CRUD voor de NOVI-collecties.
 - `src/components/` en `src/pages/` - Herbruikbare componenten en pagina's.
 
 ## Edamam API
@@ -71,13 +72,15 @@ Kom je van de oude Create React App-versie? Zet je bestaande Edamam-waarden uit 
 ## NOVI-API
 De nieuwe backend gebruikt `https://novi-backend-api-wgsgz.ondigitalocean.app/api`. Bij elk verzoek stuurt de app de waarde van `VITE_NOVI_PROJECT_ID` mee als `novi-education-project-id` header. Inloggen gebruikt `POST /api/login` met `email` en `password`; het teruggegeven JWT-token wordt bij beveiligde verzoeken als Bearer-token gebruikt. De project-ID staat bewust niet in de repository. Kopieer `.env.example` naar `.env` en vul je eigen ID in. Vite bouwt `VITE_`-variabelen in de browsercode in: behandel de project-ID als een clientidentificatie, niet als een geheim dat door de frontend kan worden beschermd.
 
-De projectomgeving moet bij NOVI zijn geactiveerd en met een JSON-configuratie zijn ingericht. Volgens de Swagger-specificatie mag alleen een beheerder gebruikers toevoegen. Daarom toont de openbare registratiepagina nu een duidelijke uitleg in plaats van een formulier dat op een 401/403-fout uitloopt.
+De projectomgeving is ingericht met `workouts`, `favorite_recipes` en `meal_plans`. Een voorbeeld van het schema zonder accountgegevens staat in `novi/fitness-planet.example.json`. Zet nooit een JSON-bestand met echte gebruikers en wachtwoorden in GitHub. Volgens de Swagger-specificatie mag alleen een beheerder gebruikers toevoegen. Daarom toont de openbare registratiepagina een uitleg in plaats van een formulier dat op een 401/403-fout uitloopt.
 
 ## Kernfuncties en huidige grenzen
 - Een ingelogde NOVI-beheerder kan via `Gebruiker aanmaken` een account toevoegen met de beveiligde `POST /api/users`-route. De openbare registratiepagina legt uit hoe een nieuwe gebruiker toegang krijgt; de NOVI-API ondersteunt voor dit project geen openbare zelfregistratie.
 - De gewone inlog gebruikt `POST /api/login`. De demo-account werkt alleen in expliciete demomodus.
-- Een gebruiker kan recepten via Edamam opzoeken, bewaren in het profiel en later per dag en eetmoment in het maaltijdplan zetten.
-- Workouts kunnen met type, intensiteit, datum en duur worden toegevoegd, bekeken en verwijderd. Workouts en het maaltijdplan worden momenteel lokaal in de browser bewaard; hiervoor zijn nog geen eigen NOVI-collecties in dit project geconfigureerd. Deze lokale gegevens worden niet met andere apparaten gesynchroniseerd en zijn niet per account afgeschermd.
+- Een gebruiker kan recepten via Edamam opzoeken, als favoriet via NOVI bewaren, in het profiel terugzien en per dag en eetmoment in de huidige week bij NOVI plannen.
+- Workouts kunnen met type, intensiteit, datum en duur via NOVI worden toegevoegd, bekeken en verwijderd. De app haalt daarvoor de aan het ingelogde account gekoppelde lijst op.
+- De NOVI-rollen staan CRUD toe voor `user` en `admin`; dit schema dwingt niet per item af dat een gebruiker alleen zijn eigen item mag wijzigen. Gebruik deze project-API niet als productieopslag voor vertrouwelijke persoonsgegevens.
+- Oude browsergegevens worden niet automatisch naar NOVI overgezet. De automatische maaltijdgenerator en andere bestaande schermen gebruiken nog browseropslag.
 
 ## Demo login (alleen met `VITE_USE_DEMO_BACKEND=true`)
 - Email: `demo@fitnessplanet.com`

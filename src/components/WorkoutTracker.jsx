@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { workoutSessions } from '../data/workouts';
-import { storage } from '../utils/localStorage';
+import { useAuth } from '../contexts/AuthContext';
+import { noviDataService } from '../services/noviDataService';
 import ActionButton from './ui/ActionButton';
 import PageHeader from './ui/PageHeader';
 import WorkoutList from './workouts/WorkoutList';
@@ -26,9 +27,21 @@ const initialWorkoutForm = () => ({
 
 const WorkoutTracker = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [workoutForm, setWorkoutForm] = useState(initialWorkoutForm);
-  const [savedWorkouts, setSavedWorkouts] = useState(() => storage.getWorkouts());
+  const [savedWorkouts, setSavedWorkouts] = useState([]);
   const [formError, setFormError] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    noviDataService.workouts.list()
+      .then((items) => { if (active) setSavedWorkouts(items); })
+      .catch((error) => { if (active) setFormError(error.message); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [user?.id]);
   const workouts = [...savedWorkouts, ...workoutSessions];
   const totalMinutes = savedWorkouts.reduce((total, workout) => total + (Number.parseInt(workout.duration, 10) || 0), 0);
   const lastSevenDays = Array.from({ length: 7 }, (_, index) => {
@@ -60,7 +73,7 @@ const WorkoutTracker = () => {
     }));
   };
 
-  const submitWorkoutForm = (event) => {
+  const submitWorkoutForm = async (event) => {
     event.preventDefault();
     const duration = Number(workoutForm.duration);
     if (!workoutForm.date || !workoutForm.time || !Number.isFinite(duration) || duration <= 0) {
@@ -68,30 +81,31 @@ const WorkoutTracker = () => {
       return;
     }
 
-    const saved = storage.addWorkout({
-      title: `${workoutForm.type} workout`,
-      type: workoutForm.type,
-      intensity: workoutForm.intensity,
-      date: workoutForm.date,
-      time: `${workoutForm.date} ${workoutForm.time}`,
-      duration: `${duration} minuten`,
-      description: workoutForm.notes || 'Eigen workout',
-      exercises: []
-    });
-
-    if (!saved) {
-      setFormError('Opslaan is niet gelukt. Probeer het opnieuw.');
-      return;
+    try {
+      const saved = await noviDataService.workouts.create({
+        title: `${workoutForm.type} workout`,
+        type: workoutForm.type,
+        intensity: workoutForm.intensity,
+        date: workoutForm.date,
+        time: workoutForm.time,
+        duration,
+        description: workoutForm.notes || 'Eigen workout'
+      });
+      setSavedWorkouts((items) => [saved, ...items]);
+      setWorkoutForm(initialWorkoutForm());
+      setFormError('');
+    } catch (error) {
+      setFormError(`Opslaan bij NOVI is niet gelukt: ${error.response?.data?.message || error.message}`);
     }
-
-    setSavedWorkouts(storage.getWorkouts());
-    setWorkoutForm(initialWorkoutForm());
-    setFormError('');
   };
 
-  const deleteWorkout = (workoutId) => {
-    if (storage.deleteWorkout(workoutId)) {
-      setSavedWorkouts(storage.getWorkouts());
+  const deleteWorkout = async (workoutId) => {
+    try {
+      await noviDataService.workouts.remove(workoutId);
+      setSavedWorkouts((items) => items.filter((item) => item.id !== workoutId));
+      setFormError('');
+    } catch (error) {
+      setFormError(`Verwijderen bij NOVI is niet gelukt: ${error.response?.data?.message || error.message}`);
     }
   };
 
@@ -110,6 +124,7 @@ const WorkoutTracker = () => {
       />
 
       <div className="workout-grid">
+        {loading && <p role="status">Workouts laden uit NOVI...</p>}
         <WorkoutList
           title="Mijn workouts en voorbeelden"
           kicker="Recent Sessions"

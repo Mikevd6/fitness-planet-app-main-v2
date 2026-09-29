@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { workoutSessions } from '../data/workouts';
-import { storage } from '../utils/localStorage';
+import { noviDataService } from '../services/noviDataService';
 import ActionButton from './ui/ActionButton';
 import PageHeader from './ui/PageHeader';
 import ExerciseList from './workouts/ExerciseList';
@@ -11,8 +11,21 @@ import './WorkoutDetail.css';
 const WorkoutDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const workout = [...storage.getWorkouts(), ...workoutSessions]
-    .find((session) => String(session.id) === id);
+  const example = workoutSessions.find((session) => String(session.id) === id);
+  const [workout, setWorkout] = useState(example || null);
+  const [loading, setLoading] = useState(!example);
+
+  useEffect(() => {
+    if (example) return undefined;
+    let active = true;
+    noviDataService.workouts.list()
+      .then((items) => { if (active) setWorkout(items.find((item) => String(item.id) === id) || null); })
+      .catch(() => { if (active) setWorkout(null); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [id, example]);
+
+  if (loading) return <p role="status">Workout laden...</p>;
 
   if (!workout) {
     return <Navigate to="/workouts" replace />;
@@ -20,7 +33,7 @@ const WorkoutDetail = () => {
 
   const detailStats = [
     { label: 'Type', value: workout.type },
-    { label: 'Duur', value: workout.duration },
+    { label: 'Duur', value: typeof workout.duration === 'number' ? `${workout.duration} minuten` : workout.duration },
     { label: 'Intensiteit', value: workout.intensity },
     { label: 'Datum', value: workout.time }
   ];
