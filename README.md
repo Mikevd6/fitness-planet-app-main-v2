@@ -64,7 +64,9 @@ In `src/services/edamamService.js` staan de externe async API-functies die meete
 - `getNextRecipesPage(nextUrl)`
 
 
-De receptenpagina toont loading, error, retry en empty states wanneer externe data wordt opgehaald.
+De receptenpagina toont loading, error, retry en empty states wanneer externe data wordt opgehaald. Voor het maaltijdtype gebruikt Edamam v2 `lunch/dinner` als gezamenlijke filterwaarde voor lunch en diner.
+
+Kom je van de oude Create React App-versie? Zet je bestaande Edamam-waarden uit `REACT_APP_EDAMAM_APP_ID` en `REACT_APP_EDAMAM_APP_KEY` in je lokale `.env` onder respectievelijk `VITE_EDAMAM_APP_ID` en `VITE_EDAMAM_APP_KEY`. De sleutels horen niet in GitHub. Een geslaagde build alleen bevestigt nog niet dat jouw account of API-limiet een live verzoek toestaat.
 
 ## NOVI-API
 De nieuwe backend gebruikt `https://novi-backend-api-wgsgz.ondigitalocean.app/api`. Bij elk verzoek stuurt de app de waarde van `VITE_NOVI_PROJECT_ID` mee als `novi-education-project-id` header. Inloggen gebruikt `POST /api/login` met `email` en `password`; het teruggegeven JWT-token wordt bij beveiligde verzoeken als Bearer-token gebruikt. De project-ID staat bewust niet in de repository. Kopieer `.env.example` naar `.env` en vul je eigen ID in. Vite bouwt `VITE_`-variabelen in de browsercode in: behandel de project-ID als een clientidentificatie, niet als een geheim dat door de frontend kan worden beschermd.
