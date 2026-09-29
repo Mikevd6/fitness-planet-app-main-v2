@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useMealPlan } from '../contexts/MealPlanContext';
-import { getSavedRecipes } from '../utils/recipeStorage';
+import { useAuth } from '../contexts/AuthContext';
+import { noviDataService } from '../services/noviDataService';
 import './MealPlanPage.css';
 
 const days = [
@@ -12,33 +12,91 @@ const mealTypes = [
   ['breakfast', 'Ontbijt'], ['lunch', 'Lunch'], ['dinner', 'Avondeten'], ['snack', 'Snack']
 ];
 const labelFor = (items, value) => items.find(([key]) => key === value)?.[1] || value;
+const dateKey = (date) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+const datesThisWeek = () => {
+  const monday = new Date();
+  monday.setHours(12, 0, 0, 0);
+  monday.setDate(monday.getDate() - (monday.getDay() + 6) % 7);
+  return Object.fromEntries(days.map(([key], index) => {
+    const date = new Date(monday);
+    date.setDate(date.getDate() + index);
+    return [key, dateKey(date)];
+  }));
+};
 
 const MealPlanPage = () => {
-  const { weekMenu, loading, error, addRecipeToMenu, removeRecipeFromMenu } = useMealPlan();
-  const [savedRecipes] = useState(getSavedRecipes);
+  const { user } = useAuth();
+  const weekDates = useMemo(datesThisWeek, []);
+  const [entries, setEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [savedRecipes, setSavedRecipes] = useState([]);
   const [day, setDay] = useState('monday');
   const [mealType, setMealType] = useState('breakfast');
   const [recipeId, setRecipeId] = useState('');
   const [message, setMessage] = useState('');
 
+  useEffect(() => {
+    let active = true;
+    Promise.all([noviDataService.mealPlans.list(), noviDataService.favoriteRecipes.list()])
+      .then(([plans, favorites]) => {
+        if (!active) return;
+        setEntries(plans.filter((item) => Object.values(weekDates).includes(item.date?.slice(0, 10))));
+        setSavedRecipes(favorites.map((item) => ({
+          id: item.id, uri: item.recipeUri, title: item.title, image: item.imageUrl
+        })));
+      })
+      .catch((failure) => { if (active) setError(failure.response?.data?.message || failure.message); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [user?.id, weekDates]);
+
+  const weekMenu = Object.fromEntries(days.map(([key]) => [key, Object.fromEntries(
+    entries.filter((item) => item.date?.slice(0, 10) === weekDates[key])
+      .map((item) => [item.mealType, { ...item, title: item.recipeTitle }])
+  )]));
+
   const hasMeals = Object.values(weekMenu || {}).some(
     (meals) => meals && Object.values(meals).some(Boolean)
   );
 
-  const addMeal = (event) => {
+  const addMeal = async (event) => {
     event.preventDefault();
     const recipe = savedRecipes.find((item) => String(item.id) === recipeId);
     if (!recipe) {
       setMessage('Kies eerst een opgeslagen recept.');
       return;
     }
-    const result = addRecipeToMenu(day, mealType, recipe);
-    setMessage(result.success ? 'Maaltijd toegevoegd aan je planning.' : result.error);
+    const existing = entries.find((item) => item.date?.slice(0, 10) === weekDates[day] && item.mealType === mealType);
+    const values = {
+      date: weekDates[day], mealType, recipeUri: recipe.uri || String(recipe.id),
+      recipeTitle: recipe.title, imageUrl: recipe.image || ''
+    };
+    try {
+      const saved = existing
+        ? await noviDataService.mealPlans.update(existing.id, values)
+        : await noviDataService.mealPlans.create(values);
+      setEntries((items) => [...items.filter((item) => item.id !== existing?.id), saved]);
+      setMessage('Maaltijd opgeslagen bij NOVI.');
+      setError('');
+    } catch (failure) {
+      setMessage('');
+      setError(failure.response?.data?.message || failure.message);
+    }
   };
 
-  const removeMeal = (selectedDay, selectedMealType) => {
-    const result = removeRecipeFromMenu(selectedDay, selectedMealType);
-    setMessage(result.success ? 'Maaltijd verwijderd.' : result.error);
+  const removeMeal = async (selectedDay, selectedMealType) => {
+    const existing = entries.find((item) => item.date?.slice(0, 10) === weekDates[selectedDay] && item.mealType === selectedMealType);
+    if (!existing) return;
+    try {
+      await noviDataService.mealPlans.remove(existing.id);
+      setEntries((items) => items.filter((item) => item.id !== existing.id));
+      setMessage('Maaltijd verwijderd bij NOVI.');
+      setError('');
+    } catch (failure) {
+      setMessage('');
+      setError(failure.response?.data?.message || failure.message);
+    }
   };
 
   if (loading) {
@@ -68,7 +126,7 @@ const MealPlanPage = () => {
             <div className="meal-plan-form__fields">
               <label>Dag
                 <select value={day} onChange={(event) => setDay(event.target.value)}>
-                  {days.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                  {days.map(([value, label]) => <option key={value} value={value}>{label} ({weekDates[value]})</option>)}
                 </select>
               </label>
               <label>Eetmoment
@@ -100,7 +158,7 @@ const MealPlanPage = () => {
               return (
                 <div key={dayKey} className="meal-plan-summary__day">
                   <div className="meal-plan-summary__day-header">
-                    <h3>{labelFor(days, dayKey)}</h3>
+                    <h3>{labelFor(days, dayKey)} ({weekDates[dayKey]})</h3>
                     <span>{plannedMeals.length} maaltijden</span>
                   </div>
 
@@ -110,9 +168,6 @@ const MealPlanPage = () => {
                         <div className="meal-plan-summary__meal-info">
                           <span>{labelFor(mealTypes, type)}</span>
                           <span className="meal-plan-summary__meal-title">{meal.title}</span>
-                          {(meal.caloriesPerServing || meal.calories) && (
-                            <span className="meal-plan-summary__meal-meta">{meal.caloriesPerServing || meal.calories} kcal</span>
-                          )}
                         </div>
                         <button type="button" onClick={() => removeMeal(dayKey, type)}>Verwijderen</button>
                       </div>

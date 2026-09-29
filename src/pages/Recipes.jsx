@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useRecipes } from '../contexts/RecipeContext';
-import { storage } from '../utils/localStorage';
+import { useAuth } from '../contexts/AuthContext';
+import { noviDataService } from '../services/noviDataService';
 import { notificationService } from '../utils/notificationService';
-import { getSavedRecipes, saveSavedRecipes } from '../utils/recipeStorage';
 import './Recipes.css';
 
 const initialFilters = {
@@ -93,6 +93,7 @@ const RecipeCard = ({ recipe, isSaved, isFavorite, onSave, onToggleFavorite }) =
 );
 
 const Recipes = () => {
+  const { user } = useAuth();
   const {
     loading,
     error,
@@ -112,14 +113,16 @@ const Recipes = () => {
   const [resultCount, setResultCount] = useState(0);
   const [activeRequest, setActiveRequest] = useState('Eiwitrijke recepten');
   const [lastRequest, setLastRequest] = useState(null);
-  const [savedRecipes, setSavedRecipes] = useState([]);
   const [favoriteRecipes, setFavoriteRecipes] = useState([]);
   const initialRecipesRequested = useRef(false);
 
   useEffect(() => {
-    setSavedRecipes(getSavedRecipes());
-    setFavoriteRecipes(storage.getFavorites());
-  }, []);
+    let active = true;
+    noviDataService.favoriteRecipes.list()
+      .then((items) => { if (active) setFavoriteRecipes(items); })
+      .catch((error) => { if (active) notificationService.warning('Favorieten niet geladen', error.message); });
+    return () => { active = false; };
+  }, [user?.id]);
 
   useEffect(() => {
     if (initialRecipesRequested.current) return;
@@ -188,33 +191,46 @@ const Recipes = () => {
     setFilters((currentFilters) => ({ ...currentFilters, [name]: value }));
   };
 
-  const saveRecipe = (recipe) => {
-    if (!recipe?.id) {
+  const saveRecipe = async (recipe) => {
+    if (!recipe?.uri) {
       notificationService.warning('Recept niet beschikbaar', 'Dit recept kan niet worden opgeslagen.');
       return;
     }
 
-    if (savedRecipes.some((savedRecipe) => savedRecipe.id === recipe.id)) {
+    if (favoriteRecipes.some((item) => item.recipeUri === recipe.uri)) {
       notificationService.info('Recept al opgeslagen', `${recipe.title} staat al in je profiel.`);
       return;
     }
 
-    const updatedRecipes = saveSavedRecipes([...savedRecipes, recipe]);
-    setSavedRecipes(updatedRecipes);
-    notificationService.success('Recept opgeslagen', `${recipe.title} is toegevoegd aan je profiel.`);
+    try {
+      const saved = await noviDataService.favoriteRecipes.create({
+        recipeUri: recipe.uri,
+        title: recipe.title,
+        imageUrl: recipe.image || '',
+        sourceUrl: recipe.url || '',
+        calories: Number(recipe.caloriesPerServing || 0)
+      });
+      setFavoriteRecipes((items) => [...items, saved]);
+      notificationService.success('Recept opgeslagen', `${recipe.title} is toegevoegd aan je profiel.`);
+    } catch (error) {
+      notificationService.warning('Recept niet opgeslagen', error.response?.data?.message || error.message);
+    }
   };
 
-  const toggleFavorite = (recipe) => {
+  const toggleFavorite = async (recipe) => {
     if (!recipe?.id) return;
 
-    if (favoriteRecipes.some((favorite) => favorite.id === recipe.id)) {
-      storage.removeFromFavorites(recipe.id);
-      setFavoriteRecipes((favorites) => favorites.filter((favorite) => favorite.id !== recipe.id));
-      return;
+    try {
+      const existing = favoriteRecipes.find((favorite) => favorite.recipeUri === recipe.uri);
+      if (existing) {
+        await noviDataService.favoriteRecipes.remove(existing.id);
+        setFavoriteRecipes((items) => items.filter((item) => item.id !== existing.id));
+      } else {
+        await saveRecipe(recipe);
+      }
+    } catch (error) {
+      notificationService.warning('Favoriet niet opgeslagen', error.response?.data?.message || error.message);
     }
-
-    storage.addToFavorites(recipe);
-    setFavoriteRecipes((favorites) => [...favorites, recipe]);
   };
 
   const quickApiActions = [
@@ -367,8 +383,8 @@ const Recipes = () => {
                     <RecipeCard
                       key={recipe.id}
                       recipe={recipe}
-                      isSaved={savedRecipes.some((savedRecipe) => savedRecipe.id === recipe.id)}
-                      isFavorite={favoriteRecipes.some((favorite) => favorite.id === recipe.id)}
+                      isSaved={favoriteRecipes.some((favorite) => favorite.recipeUri === recipe.uri)}
+                      isFavorite={favoriteRecipes.some((favorite) => favorite.recipeUri === recipe.uri)}
                       onSave={saveRecipe}
                       onToggleFavorite={toggleFavorite}
                     />
