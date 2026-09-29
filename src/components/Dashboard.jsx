@@ -1,26 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import '../styles/Dashboard.css';
+import React from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import './Dashboard.css';
 
 const Dashboard = () => {
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem('user'));
-
-    setTimeout(() => {
-      setUser(userData || { username: 'demo' });
-      setIsLoading(false);
-    }, 400);
-  }, []);
-
-  const progress = useMemo(() => {
-    const calories = 1503;
-    const goal = 3000;
-    const percentage = Math.min(Math.round((calories / goal) * 100), 100);
-
-    return { calories, goal, percentage };
-  }, []);
+  const { user } = useAuth();
+  const displayName = user?.name || user?.username || user?.email || 'gebruiker';
+  const calories = 1503;
+  const goal = 3000;
+  const progress = { calories, goal, percentage: Math.min(Math.round((calories / goal) * 100), 100) };
 
   const recentWorkouts = [
     'Bovenlichaam training',
@@ -48,15 +35,6 @@ const Dashboard = () => {
     { label: 'Core', value: '0 min' },
   ];
 
-  if (isLoading) {
-    return (
-      <div className="loading">
-        <div className="loading-spinner"></div>
-        <p>Loading...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="dashboard-page">
       <div className="dashboard-hero">
@@ -64,7 +42,7 @@ const Dashboard = () => {
           <div>
             <p className="hero-kicker">Fitness Planet Dashboard</p>
             <h1 className="hero-title">
-              Welkom terug, {user.username} <span className="wave">👋</span>
+              Welkom terug, {displayName} <span className="wave">👋</span>
             </h1>
             <p className="hero-subtitle">Hier is een overzicht van je voortgang.</p>
             <div className="hero-actions">

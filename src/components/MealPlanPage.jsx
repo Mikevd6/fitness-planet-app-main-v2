@@ -1,6 +1,6 @@
 import React from 'react';
 import { useMealPlan } from '../contexts/MealPlanContext';
-import '../styles/MealPlan.css';
+import './MealPlanPage.css';
 
 const MealPlanPage = () => {
   const { weekMenu, loading } = useMealPlan();

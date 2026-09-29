@@ -3,153 +3,108 @@ import apiClient from './api';
 const USER_KEY = 'user';
 const env = import.meta.env;
 const shouldUseDemoBackend = env.MODE === 'test' || env.VITE_USE_DEMO_BACKEND === 'true';
-const noviApiKey = env.VITE_NOVI_API_KEY;
 
-const persistUser = (user, token = null) => {
-  const data = { ...user, token };
-  localStorage.setItem(USER_KEY, JSON.stringify(data));
+const tokenIsValid = (token) => {
+  if (token === 'demo-token') return true;
+  if (!token) return false;
 
-  if (token) {
-    localStorage.setItem('token', token);
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return typeof payload.exp === 'number' && payload.exp * 1000 > Date.now() + 5000;
+  } catch {
+    return false;
   }
+};
 
+const persistUser = (user, token) => {
+  const data = {
+    ...user,
+    username: user.username || user.name || user.email,
+    name: user.name || user.email,
+    token
+  };
+  localStorage.setItem(USER_KEY, JSON.stringify(data));
+  localStorage.setItem('token', token);
   return data;
 };
 
-const getApiKeyHeader = () => (noviApiKey ? { 'X-Api-Key': noviApiKey } : {});
-
-const extractToken = (data) => {
-  if (!data) return null;
-  if (typeof data === 'string') return data;
-  return data.token || data.jwt || data.jwtToken || null;
-};
-
 const demoLogin = (credentials) => {
-  const email = credentials?.email || credentials?.username || 'demo@fitnessplanet.com';
-  const user = { username: email, email, name: credentials?.name || email };
-  const token = 'demo-token';
-  const persisted = persistUser(user, token);
-
-  return { user: persisted, token };
+  const email = credentials.email || credentials.username || 'demo@fitnessplanet.com';
+  const user = persistUser({ email }, 'demo-token');
+  return { success: true, user, token: 'demo-token' };
 };
 
-const isDemoCredential = (username, password) => {
-  const normalizedUsername = (username || '').toLowerCase();
-  return normalizedUsername === 'demo@fitnessplanet.com' && password === 'demo123';
-};
+const isDemoCredential = (email, password) =>
+  email.toLowerCase() === 'demo@fitnessplanet.com' && password === 'demo123';
 
 export const noviAuthService = {
   isAuthenticated() {
-    return Boolean(localStorage.getItem(USER_KEY));
+    const user = this.getCurrentUser();
+    return Boolean(user && tokenIsValid(localStorage.getItem('token')));
   },
 
   getCurrentUser() {
-    const stored = localStorage.getItem(USER_KEY);
-    return stored ? JSON.parse(stored) : null;
+    try {
+      const stored = localStorage.getItem(USER_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
   },
 
   getToken() {
-    const stored = this.getCurrentUser();
-    return stored?.token || null;
-  },
-
-  async fetchUserProfile(username, token) {
-    if (!username) return null;
-
-    const response = await apiClient.get(`/users/${username}`, {
-      headers: {
-        ...getApiKeyHeader(),
-        Authorization: `Bearer ${token}`
-      }
-    });
-
-    return response.data;
+    return localStorage.getItem('token');
   },
 
   async login(credentials) {
-    const username = credentials?.username || credentials?.email;
+    const email = (credentials?.email || credentials?.username || '').trim();
     const password = credentials?.password;
 
-    if (!username || !password) {
-      throw new Error('Vul zowel gebruikersnaam als wachtwoord in.');
+    if (!email || !password) {
+      throw new Error('Vul zowel je e-mailadres als wachtwoord in.');
     }
 
-    if (shouldUseDemoBackend || isDemoCredential(username, password)) {
-      const { user, token } = demoLogin(credentials);
-      return { success: true, user, token };
+    if (shouldUseDemoBackend || isDemoCredential(email, password)) {
+      return demoLogin({ email });
     }
 
     try {
-      const response = await apiClient.post(
-        '/users/authenticate',
-        { username, password },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            ...getApiKeyHeader()
-          }
-        }
-      );
-
-      const token = extractToken(response.data);
-      if (!token) {
-        throw new Error('Geen geldige JWT-token ontvangen van de backend.');
-      }
-
-      let user = { username };
-      try {
-        const profile = await this.fetchUserProfile(username, token);
-        user = { ...profile, username: profile?.username || username };
-      } catch {
-        user = { username };
+      const response = await apiClient.post('/login', { email, password });
+      const { token, user } = response.data || {};
+      if (!token || !user?.email) {
+        throw new Error('De NOVI-API gaf geen geldig token of gebruikersprofiel terug.');
       }
 
       const persisted = persistUser(user, token);
       return { success: true, user: persisted, token };
     } catch (error) {
-      if (isDemoCredential(username, password)) {
-        const { user, token } = demoLogin(credentials);
-        return { success: true, user, token };
+      if (error.response?.status === 401) {
+        throw new Error('E-mailadres of wachtwoord is onjuist.');
       }
-
-      const message = error.response?.data || error.message || 'Inloggen mislukt. Controleer je gegevens.';
-      throw new Error(typeof message === 'string' ? message : 'Inloggen mislukt.');
+      throw error;
     }
   },
 
   async register(userData) {
-    const username = userData?.username || userData?.email;
+    const currentUser = this.getCurrentUser();
+    const roles = currentUser?.roles || [];
+    const isAdmin = roles.some(role => String(role).toLowerCase() === 'admin');
 
-    if (!username || !userData?.password || !userData?.email) {
-      throw new Error('Gebruikersnaam, e-mailadres en wachtwoord zijn verplicht.');
+    if (!isAdmin || !tokenIsValid(this.getToken()) || this.getToken() === 'demo-token') {
+      throw new Error('Alleen een NOVI-beheerder kan via deze API een nieuw account aanmaken.');
     }
 
-    const payload = {
-      username,
-      email: userData.email,
+    const email = userData?.email?.trim();
+    if (!email || !userData?.password) {
+      throw new Error('E-mailadres en wachtwoord zijn verplicht.');
+    }
+
+    const response = await apiClient.post('/users', {
+      email,
       password: userData.password,
-      info: userData.info || '',
-      authorities: userData.authorities || [{ authority: 'USER' }]
-    };
-
-    if (shouldUseDemoBackend) {
-      const { user } = demoLogin(payload);
-      return { success: true, user };
-    }
-
-    try {
-      const response = await apiClient.post('/users', payload, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...getApiKeyHeader()
-        }
-      });
-
-      return { success: true, user: response.data };
-    } catch (error) {
-      const message = error.response?.data || error.message || 'Registratie mislukt.';
-      throw new Error(typeof message === 'string' ? message : 'Registratie mislukt.');
-    }
+      roles: ['user']
+    });
+    return { success: true, user: response.data };
   },
 
   logout() {

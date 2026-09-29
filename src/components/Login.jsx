@@ -74,7 +74,7 @@ const Login = () => {
         </div>
         <div className="nav-actions">
           <Link to="/login" className="nav-btn secondary">Login</Link>
-          <Link to="/register" className="nav-btn primary">Register</Link>
+          <Link to="/register" className="nav-btn primary">Account aanvragen</Link>
         </div>
       </header>
 
@@ -126,9 +126,9 @@ const Login = () => {
 
           <div className="login-footer">
             <p>
-              Nog geen account?{' '}
+              Account nodig?{' '}
               <Link to="/register" className="link">
-                Registreer hier
+                Lees hoe je toegang krijgt
               </Link>
             </p>
             <p>

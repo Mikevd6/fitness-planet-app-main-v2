@@ -1,5 +1,5 @@
 import React from 'react';
-import '../styles/ProgressTracker.css';
+import './ProgressTracker.css';
 
 const stats = [
   { label: 'Gewicht', value: '82.4kg', change: '-0.6kg' },
