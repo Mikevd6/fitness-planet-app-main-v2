@@ -2,8 +2,9 @@ import apiClient from './api';
 import { noviAuthService } from './noviAuthService';
 
 const userId = () => {
-  const id = Number(noviAuthService.getCurrentUser()?.id);
-  if (!Number.isInteger(id) || id <= 0) {
+  const storedId = noviAuthService.getCurrentUser()?.id;
+  const id = Number(storedId);
+  if (storedId == null || !Number.isInteger(id) || id < 0) {
     throw new Error('Log opnieuw in om je gegevens te beheren.');
   }
   return id;
