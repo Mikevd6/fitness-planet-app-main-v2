@@ -280,10 +280,14 @@ export const MealPlanProvider = ({ children }) => {
   // Save week menu to storage
   const saveWeekMenu = (weekMenu) => {
     try {
-      storage.saveWeekMenu(weekMenu);
+      if (!storage.saveWeekMenu(weekMenu)) {
+        throw new Error('Het maaltijdplan kon niet worden opgeslagen.');
+      }
       dispatch({ type: MEAL_PLAN_ACTIONS.UPDATE_WEEK_MENU, payload: weekMenu });
+      return { success: true };
     } catch (error) {
       dispatch({ type: MEAL_PLAN_ACTIONS.SET_ERROR, payload: error.message });
+      return { success: false, error: error.message };
     }
   };
 
@@ -298,13 +302,7 @@ export const MealPlanProvider = ({ children }) => {
         }
       };
       
-      saveWeekMenu(updatedMenu);
-      dispatch({
-        type: MEAL_PLAN_ACTIONS.ADD_RECIPE_TO_MENU,
-        payload: { day, mealType, recipe }
-      });
-
-      return { success: true };
+      return saveWeekMenu(updatedMenu);
     } catch (error) {
       dispatch({ type: MEAL_PLAN_ACTIONS.SET_ERROR, payload: error.message });
       return { success: false, error: error.message };
@@ -314,21 +312,14 @@ export const MealPlanProvider = ({ children }) => {
   // Remove recipe from menu
   const removeRecipeFromMenu = (day, mealType) => {
     try {
+      const updatedDay = { ...state.weekMenu[day] };
+      delete updatedDay[mealType];
       const updatedMenu = {
         ...state.weekMenu,
-        [day]: {
-          ...state.weekMenu[day],
-          [mealType]: null
-        }
+        [day]: updatedDay
       };
-      
-      saveWeekMenu(updatedMenu);
-      dispatch({
-        type: MEAL_PLAN_ACTIONS.REMOVE_RECIPE_FROM_MENU,
-        payload: { day, mealType }
-      });
 
-      return { success: true };
+      return saveWeekMenu(updatedMenu);
     } catch (error) {
       dispatch({ type: MEAL_PLAN_ACTIONS.SET_ERROR, payload: error.message });
       return { success: false, error: error.message };

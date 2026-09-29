@@ -5,6 +5,7 @@ import './Header.css';
 
 const Header = () => {
   const { user, logout } = useAuth();
+  const isAdmin = user?.roles?.some((role) => String(role).toLowerCase() === 'admin');
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
 
@@ -67,6 +68,13 @@ const Header = () => {
                   Profiel
                 </Link>
               </li>
+              {isAdmin && (
+                <li className="nav-item">
+                  <Link to="/gebruikers-aanmaken" className={linkClass('/gebruikers-aanmaken')} onClick={() => setMenuOpen(false)}>
+                    Gebruiker aanmaken
+                  </Link>
+                </li>
+              )}
             </ul>
           </nav>
 

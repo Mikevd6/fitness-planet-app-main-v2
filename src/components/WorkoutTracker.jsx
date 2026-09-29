@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { workoutSessions } from '../data/workouts';
+import { storage } from '../utils/localStorage';
 import ActionButton from './ui/ActionButton';
 import PageHeader from './ui/PageHeader';
 import WorkoutList from './workouts/WorkoutList';
@@ -8,26 +9,43 @@ import WorkoutPlanForm from './workouts/WorkoutPlanForm';
 import WorkoutStatsGrid from './workouts/WorkoutStatsGrid';
 import './WorkoutTracker.css';
 
-const workoutStats = [
-  { label: 'Sessions', value: '3/5', detail: 'Deze week' },
-  { label: 'Totale tijd', value: '6h 42m', detail: 'Deze week' },
-  { label: 'Gem. tempo', value: 'OK', detail: '12.26 minuten' },
-  { label: 'Compliance', value: '75%', detail: 'Deze week' }
-];
+const localDate = (date) => [
+  date.getFullYear(),
+  String(date.getMonth() + 1).padStart(2, '0'),
+  String(date.getDate()).padStart(2, '0')
+].join('-');
 
-const chartPoints = [50, 65, 58, 72, 60, 68, 62];
-
-const initialWorkoutForm = {
+const initialWorkoutForm = () => ({
   type: 'Functioneel',
   intensity: 'Lage',
-  date: '2022-05-05',
+  date: localDate(new Date()),
   time: '15:00',
+  duration: '',
   notes: ''
-};
+});
 
 const WorkoutTracker = () => {
   const navigate = useNavigate();
   const [workoutForm, setWorkoutForm] = useState(initialWorkoutForm);
+  const [savedWorkouts, setSavedWorkouts] = useState(() => storage.getWorkouts());
+  const [formError, setFormError] = useState('');
+  const workouts = [...savedWorkouts, ...workoutSessions];
+  const totalMinutes = savedWorkouts.reduce((total, workout) => total + (Number.parseInt(workout.duration, 10) || 0), 0);
+  const lastSevenDays = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date();
+    date.setDate(date.getDate() - (6 - index));
+    return localDate(date);
+  });
+  const dailyMinutes = lastSevenDays.map((day) => savedWorkouts
+    .filter((workout) => workout.date === day)
+    .reduce((total, workout) => total + (Number.parseInt(workout.duration, 10) || 0), 0));
+  const maxMinutes = Math.max(...dailyMinutes, 1);
+  const workoutStats = [
+    { label: 'Opgeslagen', value: savedWorkouts.length, detail: 'Eigen workouts' },
+    { label: 'Totale tijd', value: `${totalMinutes} min`, detail: 'Eigen workouts' },
+    { label: 'Deze week', value: savedWorkouts.filter((workout) => lastSevenDays.includes(workout.date)).length, detail: 'Afgelopen 7 dagen' },
+    { label: 'Laatste type', value: savedWorkouts[0]?.type || 'Nog geen', detail: 'Eigen workouts' }
+  ];
 
   const openWorkoutDetails = (workoutId) => {
     navigate(`/workouts/${workoutId}`);
@@ -44,7 +62,37 @@ const WorkoutTracker = () => {
 
   const submitWorkoutForm = (event) => {
     event.preventDefault();
-    setWorkoutForm(initialWorkoutForm);
+    const duration = Number(workoutForm.duration);
+    if (!workoutForm.date || !workoutForm.time || !Number.isFinite(duration) || duration <= 0) {
+      setFormError('Vul een datum, tijd en een duur groter dan nul in.');
+      return;
+    }
+
+    const saved = storage.addWorkout({
+      title: `${workoutForm.type} workout`,
+      type: workoutForm.type,
+      intensity: workoutForm.intensity,
+      date: workoutForm.date,
+      time: `${workoutForm.date} ${workoutForm.time}`,
+      duration: `${duration} minuten`,
+      description: workoutForm.notes || 'Eigen workout',
+      exercises: []
+    });
+
+    if (!saved) {
+      setFormError('Opslaan is niet gelukt. Probeer het opnieuw.');
+      return;
+    }
+
+    setSavedWorkouts(storage.getWorkouts());
+    setWorkoutForm(initialWorkoutForm());
+    setFormError('');
+  };
+
+  const deleteWorkout = (workoutId) => {
+    if (storage.deleteWorkout(workoutId)) {
+      setSavedWorkouts(storage.getWorkouts());
+    }
   };
 
   return (
@@ -63,10 +111,11 @@ const WorkoutTracker = () => {
 
       <div className="workout-grid">
         <WorkoutList
-          title="Laatste geplande sessies"
+          title="Mijn workouts en voorbeelden"
           kicker="Recent Sessions"
-          workouts={workoutSessions}
+          workouts={workouts}
           onSelectWorkout={openWorkoutDetails}
+          onDeleteWorkout={deleteWorkout}
         />
 
         <div className="panel stats-panel">
@@ -92,11 +141,12 @@ const WorkoutTracker = () => {
               <div className="chart-line"></div>
             </div>
             <div className="chart-area">
-              {chartPoints.map((value, index) => (
+              {dailyMinutes.map((value, index) => (
                 <div
-                  key={index}
+                  key={lastSevenDays[index]}
                   className="chart-point"
-                  style={{ height: `${value}%` }}
+                  title={`${lastSevenDays[index]}: ${value} minuten`}
+                  style={{ height: `${value ? Math.max(8, (value / maxMinutes) * 100) : 0}%` }}
                 ></div>
               ))}
             </div>
@@ -107,6 +157,7 @@ const WorkoutTracker = () => {
           formValues={workoutForm}
           onFieldChange={updateWorkoutForm}
           onSubmit={submitWorkoutForm}
+          error={formError}
         />
       </div>
     </div>

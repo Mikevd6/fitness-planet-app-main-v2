@@ -1,7 +1,7 @@
 import WorkoutCard from './WorkoutCard';
 import './WorkoutList.css';
 
-const WorkoutList = ({ title, kicker, workouts, onSelectWorkout }) => (
+const WorkoutList = ({ title, kicker, workouts, onSelectWorkout, onDeleteWorkout }) => (
   <div className="panel recent-panel">
     <div className="panel-header">
       <div>
@@ -16,7 +16,7 @@ const WorkoutList = ({ title, kicker, workouts, onSelectWorkout }) => (
     </div>
     <ul className="session-list">
       {workouts.map((workout) => (
-        <WorkoutCard key={workout.id} workout={workout} onViewDetails={onSelectWorkout} />
+        <WorkoutCard key={workout.id} workout={workout} onViewDetails={onSelectWorkout} onDelete={onDeleteWorkout} />
       ))}
     </ul>
   </div>
