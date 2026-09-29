@@ -19,7 +19,7 @@ const tokenIsValid = (token) => {
 const tokenUserId = (token) => {
   try {
     const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-    return Number(payload.userId) || null;
+    return Number.isInteger(payload.userId) ? payload.userId : null;
   } catch {
     return null;
   }

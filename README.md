@@ -13,26 +13,30 @@ Een Nederlandstalige React-app voor het plannen van maaltijden, het volgen van w
    ```bash
    npm install
    ```
-2. Kopieer de voorbeeldconfiguratie:
+2. Kopieer de voorbeeldconfiguraties:
    ```bash
    cp .env.example .env
+   cp .env.server.example .env.server
    ```
-3. Vul de NOVI-project-ID en de Edamam-waarden in:
+3. Vul de NOVI-project-ID en de Edamam-waarden in `.env` in:
    ```bash
    VITE_NOVI_PROJECT_ID=your_novi_project_id_here
    VITE_EDAMAM_APP_ID=your_edamam_app_id_here
    VITE_EDAMAM_APP_KEY=your_edamam_app_key_here
    ```
-4. Start de app:
+4. Vul in `.env.server` dezelfde project-ID en een **bestaand beheerdersaccount** in (`NOVI_PROJECT_ID`, `NOVI_ADMIN_EMAIL`, `NOVI_ADMIN_PASSWORD`). Dit bestand blijft lokaal en mag niet in GitHub of de browser terechtkomen.
+5. Start de app en registratieserver samen:
    ```bash
    npm start
    ```
+   Open `http://localhost:5173/register` om zonder inloggen een account aan te maken. Start niet alleen Vite via `npm run web`, want dan is registratie niet bereikbaar.
 
 ## Beschikbare scripts
-- `npm start` - Start de Vite ontwikkelserver.
-- `npm run dev` - Start de Vite ontwikkelserver.
+- `npm start` / `npm run dev` - Start Vite op poort 5173 en de registratieserver op poort 3000.
+- `npm run web` - Start alleen Vite; bedoeld voor frontendwerk zonder registratie.
 - `npm run build` - Maakt een productiebuild.
-- `npm run preview` - Previewt de productiebuild.
+- `npm run serve` - Serveert de build en registratie vanaf één Node-server op poort 3000.
+- `npm run test:registration` - Test invoercontrole en de serveraanroepen voor registratie.
 
 ## Projectstructuur
 De actieve schermcomponenten en context-providers met JSX hebben een `.jsx`-extensie. Componentgebonden CSS staat naast de bijbehorende component; algemene tokens en opmaak staan in `src/index.css` en `src/App.css`.
@@ -43,6 +47,7 @@ De actieve schermcomponenten en context-providers met JSX hebben een `.jsx`-exte
 - `src/contexts/` - Context-providers voor authenticatie, recepten en mealplanning.
 - `src/services/edamamService.js` - Centrale Edamam API-laag.
 - `src/services/noviDataService.js` - CRUD voor de NOVI-collecties.
+- `server/` - Serverroute voor openbare registratie; de NOVI-beheerdersgegevens blijven hier buiten de browser.
 - `src/components/` en `src/pages/` - Herbruikbare componenten en pagina's.
 
 ## Edamam API
@@ -72,10 +77,12 @@ Kom je van de oude Create React App-versie? Zet je bestaande Edamam-waarden uit 
 ## NOVI-API
 De nieuwe backend gebruikt `https://novi-backend-api-wgsgz.ondigitalocean.app/api`. Bij elk verzoek stuurt de app de waarde van `VITE_NOVI_PROJECT_ID` mee als `novi-education-project-id` header. Inloggen gebruikt `POST /api/login` met `email` en `password`; het teruggegeven JWT-token wordt bij beveiligde verzoeken als Bearer-token gebruikt. De project-ID staat bewust niet in de repository. Kopieer `.env.example` naar `.env` en vul je eigen ID in. Vite bouwt `VITE_`-variabelen in de browsercode in: behandel de project-ID als een clientidentificatie, niet als een geheim dat door de frontend kan worden beschermd.
 
-De projectomgeving is ingericht met `workouts`, `favorite_recipes` en `meal_plans`. Een voorbeeld van het schema zonder accountgegevens staat in `novi/fitness-planet.example.json`. Zet nooit een JSON-bestand met echte gebruikers en wachtwoorden in GitHub. Volgens de Swagger-specificatie mag alleen een beheerder gebruikers toevoegen. Daarom toont de openbare registratiepagina een uitleg in plaats van een formulier dat op een 401/403-fout uitloopt.
+De projectomgeving is ingericht met `workouts`, `favorite_recipes` en `meal_plans`. Een voorbeeld van het schema zonder accountgegevens staat in `novi/fitness-planet.example.json`. Zet nooit een JSON-bestand met echte gebruikers en wachtwoorden in GitHub. NOVI staat `POST /api/users` alleen voor beheerders toe. Daarom verstuurt de openbare registratiepagina haar gegevens naar de eigen Node-server: die controleert e-mail en wachtwoord, kijkt of het adres al bestaat en maakt via NOVI uitsluitend een account met de rol `user` aan. De browser ontvangt nooit het beheerderswachtwoord of het beheerders-JWT.
+
+Bij een productiepublicatie moet de Node-server samen met de gebouwde frontend worden gehost en moeten `NOVI_PROJECT_ID`, `NOVI_ADMIN_EMAIL` en `NOVI_ADMIN_PASSWORD` als geheime servervariabelen worden ingesteld. Een uitsluitend statische host kan dit registratieproces niet uitvoeren. De server heeft een eenvoudige limiet van vijf registratiepogingen per IP per kwartier; voor een commerciële dienst zijn aanvullende maatregelen zoals e-mailverificatie en centraal rate limiting nodig.
 
 ## Kernfuncties en huidige grenzen
-- Een ingelogde NOVI-beheerder kan via `Gebruiker aanmaken` een account toevoegen met de beveiligde `POST /api/users`-route. De openbare registratiepagina legt uit hoe een nieuwe gebruiker toegang krijgt; de NOVI-API ondersteunt voor dit project geen openbare zelfregistratie.
+- Een nieuwe bezoeker kan via `/register` zelf een account maken en daarna via NOVI inloggen. De server voert de vereiste beheerdersaanroep uit zonder beheerdersgegevens in de frontend te plaatsen. De beheerder kan daarnaast via `Gebruiker aanmaken` accounts toevoegen.
 - De gewone inlog gebruikt `POST /api/login`. De demo-account werkt alleen in expliciete demomodus.
 - Een gebruiker kan recepten via Edamam opzoeken, als favoriet via NOVI bewaren, in het profiel terugzien en per dag en eetmoment in de huidige week bij NOVI plannen.
 - Workouts kunnen met type, intensiteit, datum en duur via NOVI worden toegevoegd, bekeken en verwijderd. De app haalt daarvoor de aan het ingelogde account gekoppelde lijst op.

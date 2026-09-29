@@ -74,7 +74,7 @@ const Login = () => {
         </div>
         <div className="nav-actions">
           <Link to="/login" className="nav-btn secondary">Login</Link>
-          <Link to="/register" className="nav-btn primary">Account aanvragen</Link>
+          <Link to="/register" className="nav-btn primary">Registreren</Link>
         </div>
       </header>
 

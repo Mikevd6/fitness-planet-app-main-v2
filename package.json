@@ -11,10 +11,13 @@
     "react-router-dom": "^6.0.0"
   },
   "scripts": {
-    "start": "vite",
-    "dev": "vite",
+    "start": "node scripts/dev.mjs",
+    "dev": "node scripts/dev.mjs",
+    "web": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "serve": "node server/index.js",
+    "test:registration": "node --test server/registration.test.js"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.8.0",

@@ -16,6 +16,7 @@
   box-shadow: var(--shadow-soft);
 }
 
+.auth-form-container h1,
 .auth-form-container h2 {
   margin: 0 0 10px;
   color: var(--color-primary-dark);
