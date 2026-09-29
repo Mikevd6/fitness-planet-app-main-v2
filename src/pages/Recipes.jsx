@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRecipes } from '../contexts/RecipeContext';
 import { storage } from '../utils/localStorage';
 import { notificationService } from '../utils/notificationService';
@@ -15,7 +15,12 @@ const initialFilters = {
 };
 
 const cuisineTypes = ['', 'american', 'italian', 'chinese', 'mexican', 'indian', 'french', 'mediterranean'];
-const mealTypes = ['', 'breakfast', 'lunch', 'dinner', 'snack'];
+const mealTypes = [
+  { value: '', label: 'Alle maaltijden' },
+  { value: 'breakfast', label: 'Ontbijt' },
+  { value: 'lunch/dinner', label: 'Lunch of diner' },
+  { value: 'snack', label: 'Snack' }
+];
 const diets = ['', 'balanced', 'high-protein', 'low-carb', 'low-fat', 'low-sodium'];
 const healthLabels = ['', 'vegetarian', 'vegan', 'gluten-free', 'dairy-free', 'soy-free', 'peanut-free'];
 
@@ -109,6 +114,7 @@ const Recipes = () => {
   const [lastRequest, setLastRequest] = useState(null);
   const [savedRecipes, setSavedRecipes] = useState([]);
   const [favoriteRecipes, setFavoriteRecipes] = useState([]);
+  const initialRecipesRequested = useRef(false);
 
   useEffect(() => {
     setSavedRecipes(getSavedRecipes());
@@ -116,6 +122,9 @@ const Recipes = () => {
   }, []);
 
   useEffect(() => {
+    if (initialRecipesRequested.current) return;
+    initialRecipesRequested.current = true;
+
     const loadInitialRecipes = async () => {
       const result = await getHighProteinRecipes();
 
@@ -225,9 +234,9 @@ const Recipes = () => {
       onClick: () => executeRecipeRequest('Dieetfilter: high-protein', () => getRecipesByDiet('high-protein'))
     },
     {
-      label: 'Diner',
+      label: 'Lunch/diner',
       description: 'getRecipesByMealType()',
-      onClick: () => executeRecipeRequest('Maaltijdfilter: dinner', () => getRecipesByMealType('dinner'))
+      onClick: () => executeRecipeRequest('Maaltijdfilter: lunch/dinner', () => getRecipesByMealType('lunch/dinner'))
     },
     {
       label: 'Vegan',
@@ -284,7 +293,7 @@ const Recipes = () => {
           <div className="filter-group">
             <label htmlFor="mealType">Maaltijd</label>
             <select id="mealType" value={filters.mealType} onChange={(event) => updateFilter('mealType', event.target.value)}>
-              {mealTypes.map((type) => <option key={type || 'all'} value={type}>{labelFor(type, 'Any Meal')}</option>)}
+              {mealTypes.map((type) => <option key={type.value || 'all'} value={type.value}>{type.label}</option>)}
             </select>
           </div>
 
