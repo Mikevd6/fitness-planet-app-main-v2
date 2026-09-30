@@ -112,13 +112,13 @@ const MealPlanPage = () => {
 
   return (
     <div className="meal-plan-page">
-      <div className="meal-plan-hero">
+      <header className="meal-plan-hero">
         <div className="meal-plan-hero__content">
           <p className="eyebrow">Maaltijdplan</p>
           <h1>Maaltijdplan</h1>
           <p className="subtitle">Beheer en plan je wekelijkse maaltijden.</p>
         </div>
-      </div>
+      </header>
 
       <div className="meal-plan-shell">
         <form className="meal-plan-form" onSubmit={addMeal}>
@@ -153,13 +153,13 @@ const MealPlanPage = () => {
             <span>Nog geen maaltijden gepland.</span>
           </div>
         ) : (
-          <div className="meal-plan-summary">
+          <section className="meal-plan-summary" aria-label="Geplande maaltijden">
             {Object.entries(weekMenu).map(([dayKey, meals]) => {
               const plannedMeals = Object.entries(meals || {}).filter(([, meal]) => Boolean(meal));
               if (plannedMeals.length === 0) return null;
 
               return (
-                <div key={dayKey} className="meal-plan-summary__day">
+                <section key={dayKey} className="meal-plan-summary__day">
                   <div className="meal-plan-summary__day-header">
                     <h3>{labelFor(days, dayKey)} ({weekDates[dayKey]})</h3>
                     <span>{plannedMeals.length} maaltijden</span>
@@ -167,19 +167,19 @@ const MealPlanPage = () => {
 
                   <div className="meal-plan-summary__meals">
                     {plannedMeals.map(([type, meal]) => (
-                      <div key={`${dayKey}-${type}`} className="meal-plan-summary__meal">
+                      <article key={`${dayKey}-${type}`} className="meal-plan-summary__meal">
                         <div className="meal-plan-summary__meal-info">
                           <span>{labelFor(mealTypes, type)}</span>
-                          <span className="meal-plan-summary__meal-title">{meal.title}</span>
+                          <h4 className="meal-plan-summary__meal-title">{meal.title}</h4>
                         </div>
                         <button type="button" onClick={() => removeMeal(dayKey, type)}>Verwijderen</button>
-                      </div>
+                      </article>
                     ))}
                   </div>
-                </div>
+                </section>
               );
             })}
-          </div>
+          </section>
         )}
       </div>
     </div>

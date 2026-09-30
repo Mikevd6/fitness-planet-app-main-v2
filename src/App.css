@@ -114,3 +114,10 @@
     flex-direction: column;
   }
 }
+.app-footer {
+  padding: 20px var(--space-page);
+  text-align: center;
+  color: var(--color-muted-light);
+}
+
+.app-footer p { margin: 0; }

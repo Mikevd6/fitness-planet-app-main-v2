@@ -116,26 +116,29 @@
 
 .menu-toggle {
   display: none;
-  flex-direction: column;
-  justify-content: center;
-  gap: 5px;
+  position: relative;
   width: 44px;
   height: 44px;
   padding: 10px;
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.08);
-  background: #ffffff;
+  background: linear-gradient(#4b5563, #4b5563) center / 24px 2px no-repeat #ffffff;
   cursor: pointer;
 }
 
-.menu-toggle span {
-  display: block;
-  width: 100%;
+.menu-toggle::before,
+.menu-toggle::after {
+  content: '';
+  position: absolute;
+  left: 9px;
+  width: 24px;
   height: 2px;
   background: #4b5563;
   border-radius: 999px;
-  transition: transform 0.2s ease, opacity 0.2s ease;
 }
+
+.menu-toggle::before { top: 14px; }
+.menu-toggle::after { bottom: 14px; }
 
 @media (max-width: 1100px) {
   .nav-list {

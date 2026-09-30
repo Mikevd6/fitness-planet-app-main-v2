@@ -14,13 +14,13 @@ const AdminUserCreate = () => {
 
   if (!isAdmin) {
     return (
-      <main className="auth-container">
+      <section className="auth-container">
         <div className="auth-form-container">
           <h1>Geen toegang</h1>
           <p>Alleen een ingelogde NOVI-beheerder kan gebruikers aanmaken.</p>
           <Link to="/dashboard">Terug naar dashboard</Link>
         </div>
-      </main>
+      </section>
     );
   }
 
@@ -42,7 +42,7 @@ const AdminUserCreate = () => {
   };
 
   return (
-    <main className="auth-container">
+    <section className="auth-container">
       <div className="auth-form-container">
         <h1>Gebruiker aanmaken</h1>
         <p className="auth-description">Maak als beheerder een account aan via de NOVI-API.</p>
@@ -60,7 +60,7 @@ const AdminUserCreate = () => {
         {message && <p role="status">{message}</p>}
         {error && <p role="alert" className="form-error">{error}</p>}
       </div>
-    </main>
+    </section>
   );
 };
 
