@@ -31,7 +31,7 @@ const Header = () => {
             </Link>
           </div>
 
-          <nav className={navClass}>
+          <nav id="main-navigation" className={navClass}>
             <ul className="nav-list">
               <li className="nav-item">
                 <Link to="/dashboard" className={linkClass('/dashboard')} onClick={() => setMenuOpen(false)}>
@@ -88,11 +88,9 @@ const Header = () => {
               </div>
             )}
 
-            <button className="menu-toggle" onClick={toggleMenu} aria-label="Toggle navigation menu">
-              <span></span>
-              <span></span>
-              <span></span>
-            </button>
+            <button type="button" className="menu-toggle" onClick={toggleMenu}
+              aria-label={menuOpen ? 'Sluit navigatiemenu' : 'Open navigatiemenu'}
+              aria-controls="main-navigation" aria-expanded={menuOpen} />
           </div>
         </div>
       </div>

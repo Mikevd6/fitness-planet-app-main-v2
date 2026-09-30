@@ -12,6 +12,9 @@ const ProtectedLayout = () => (
         <main className="main-content">
           <Outlet />
         </main>
+        <footer className="app-footer">
+          <p>Fitness Planet — voeding en beweging op één plek.</p>
+        </footer>
       </MealPlanProvider>
     </RecipeProvider>
   </ProtectedRoute>
