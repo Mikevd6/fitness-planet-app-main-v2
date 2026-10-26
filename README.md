@@ -10,42 +10,17 @@ Een Nederlandstalige React-app voor het plannen van maaltijden, het volgen van w
 
 ## Benodigdheden
 - Installeer [Node.js](https://nodejs.org/en/download) **22.12 of nieuwer** (bij voorkeur de actuele LTS-versie). Dit project gebruikt Vite 7; oudere Node-versies kunnen de app niet starten. **npm 10 of nieuwer wordt met Node.js meegeïnstalleerd** en hoeft niet apart te worden gedownload. Controleer de installatie met `node --version` en `npm --version`.
-- Zorg dat je NOVI-project is geactiveerd en dat de JSON-configuratie voor `workouts`, `favorite_recipes` en `meal_plans` is geüpload. Je hebt de project-ID en de inloggegevens van een bestaande NOVI-beheerder nodig. Voor recepten zoeken heb je een Edamam-app-ID en -sleutel nodig.
+- De Edamam-app-ID en API-key zijn opgenomen in het meegeleverde `.env`-bestand naast `package.json`. De docent hoeft geen eigen API-key aan te maken.
+- De bestaande NOVI-project-ID is opgenomen in `.env`; de serverconfiguratie met de NOVI-beheerdersgegevens staat in `.env.server`. De docent hoeft geen eigen project of beheerder aan te maken.
 
 ## Installatie en starten
-1. Download de code en open de projectmap in een terminal:
-   ```bash
-   git clone https://github.com/Mikevd6/fitness-planet-app-main-v2.git
-   cd fitness-planet-app-main-v2
-   ```
-2. Installeer de dependencies:
-   ```bash
-   npm install
-   ```
-3. Kopieer de voorbeeldconfiguraties:
-   ```bash
-   cp .env.example .env
-   cp .env.server.example .env.server
-   ```
-   Gebruik je Windows PowerShell? Gebruik dan `Copy-Item .env.example .env` en `Copy-Item .env.server.example .env.server`.
-4. Vul je eigen NOVI-project-ID en Edamam-gegevens in `.env` in:
-   ```bash
-   VITE_NOVI_PROJECT_ID=jouw_project_id
-   VITE_EDAMAM_APP_ID=jouw_app_id
-   VITE_EDAMAM_APP_KEY=jouw_app_sleutel
-   ```
-5. Vul in `.env.server` dezelfde project-ID en de gegevens van een **bestaand NOVI-beheerdersaccount** in:
-   ```bash
-   NOVI_PROJECT_ID=jouw_project_id
-   NOVI_ADMIN_EMAIL=beheerder@voorbeeld.nl
-   NOVI_ADMIN_PASSWORD=jouw_beheerderswachtwoord
-   ```
-   Laat de overige voorbeeldinstellingen staan. Beide `.env`-bestanden blijven lokaal; zet vooral het beheerderswachtwoord nooit in GitHub of in frontendvariabelen met `VITE_`.
-6. Start de frontend en de registratieserver samen:
-   ```bash
-   npm start
-   ```
-   Open `http://localhost:5173/register` en maak met een nog niet gebruikt e-mailadres een account aan. Log daarna in via `http://localhost:5173/login`. De server draait op poort 3000 en Vite op poort 5173; houd de terminal open tijdens het testen. Stop beide processen met `Ctrl+C`.
+1. Pak de ingeleverde project-ZIP uit en open de map met `package.json` in een terminal. Gebruik voor beoordeling deze ZIP, omdat de lokale configuratie niet op GitHub staat.
+2. Installeer de dependencies met `npm install`.
+3. Behoud het meegeleverde `.env`-bestand; overschrijf dit niet met `.env.example`. Zowel `.env` als `.env.server` zijn meegeleverd.
+4. Start beide onderdelen met `npm start`.
+5. Open `http://localhost:5173/register` en maak met een nog niet gebruikt e-mailadres een account aan. Log daarna in via `http://localhost:5173/login`. Houd de terminal open tijdens het testen; stop met `Ctrl+C`.
+
+De configuratiebestanden worden privé met de opdracht ingeleverd en blijven buiten GitHub.
 
 De app start lokaal, maar **NOVI draait niet lokaal**. De frontend verstuurt login- en gegevensverzoeken via internet naar de NOVI-API, met de project-ID in een header en na inloggen een JWT. Alleen openbare registratie gaat eerst naar de eigen lokale Node-server op `/registration`; die maakt met het beheerdersaccount een gewone gebruiker aan bij NOVI. De receptenpagina haalt recepten rechtstreeks bij Edamam op. Start daarom beide onderdelen met `npm start`; `npm run web` alleen maakt registratie niet bereikbaar. Zonder internetverbinding of juiste projectgegevens werken deze externe functies niet.
 
@@ -93,7 +68,7 @@ De receptenpagina toont loading, error, retry en empty states wanneer externe da
 Kom je van de oude Create React App-versie? Zet je bestaande Edamam-waarden uit `REACT_APP_EDAMAM_APP_ID` en `REACT_APP_EDAMAM_APP_KEY` in je lokale `.env` onder respectievelijk `VITE_EDAMAM_APP_ID` en `VITE_EDAMAM_APP_KEY`. De sleutels horen niet in GitHub. Een geslaagde build alleen bevestigt nog niet dat jouw account of API-limiet een live verzoek toestaat.
 
 ## NOVI-API
-De nieuwe backend gebruikt `https://novi-backend-api-wgsgz.ondigitalocean.app/api`. Bij elk verzoek stuurt de app de waarde van `VITE_NOVI_PROJECT_ID` mee als `novi-education-project-id` header. Inloggen gebruikt `POST /api/login` met `email` en `password`; het teruggegeven JWT-token wordt bij beveiligde verzoeken als Bearer-token gebruikt. De project-ID staat bewust niet in de repository. Kopieer `.env.example` naar `.env` en vul je eigen ID in. Vite bouwt `VITE_`-variabelen in de browsercode in: behandel de project-ID als een clientidentificatie, niet als een geheim dat door de frontend kan worden beschermd.
+De nieuwe backend gebruikt `https://novi-backend-api-wgsgz.ondigitalocean.app/api`. Bij elk verzoek stuurt de app de waarde van `VITE_NOVI_PROJECT_ID` mee als `novi-education-project-id` header. Inloggen gebruikt `POST /api/login` met `email` en `password`; het teruggegeven JWT-token wordt bij beveiligde verzoeken als Bearer-token gebruikt. De project-ID staat in het meegeleverde `.env`-bestand. De docent gebruikt de aangeleverde configuratie. Vite bouwt `VITE_`-variabelen in de browsercode in: behandel de project-ID als een clientidentificatie, niet als een geheim dat door de frontend kan worden beschermd.
 
 De projectomgeving is ingericht met `workouts`, `favorite_recipes` en `meal_plans`. Een voorbeeld van het schema zonder accountgegevens staat in `novi/fitness-planet.example.json`. Zet nooit een JSON-bestand met echte gebruikers en wachtwoorden in GitHub. NOVI staat `POST /api/users` alleen voor beheerders toe. Daarom verstuurt de openbare registratiepagina haar gegevens naar de eigen Node-server: die controleert e-mail en wachtwoord, kijkt of het adres al bestaat en maakt via NOVI uitsluitend een account met de rol `user` aan. De browser ontvangt nooit het beheerderswachtwoord of het beheerders-JWT.
 
