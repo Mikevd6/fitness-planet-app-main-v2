@@ -84,6 +84,6 @@ Bij een productiepublicatie moet de Node-server samen met de gebouwde frontend w
 
 ## Demo login (alleen met `VITE_USE_DEMO_BACKEND=true`)
 - Email: `demo@fitnessplanet.com`
-- Wachtwoord: `demo123`
+- Wachtwoord: `demo1234`
 
 In de gewone app gaat inloggen via de NOVI-backend. De demo-inlog is alleen beschikbaar wanneer de ontwikkelaar de demomodus expliciet inschakelt.
